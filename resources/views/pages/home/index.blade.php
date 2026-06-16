@@ -57,7 +57,32 @@
         </div>
     </div>
 
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-20 mt-2 md:-mt-16 mb-16" x-data="{ tab: 'property' }">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-20 mt-2 md:-mt-16 mb-16" x-data="{
+        tab: 'property',
+        sellers: @js($sellers ?? []),
+        agentQuery: '',
+        selectedSellerId: '',
+        showSuggestions: false,
+        get filteredSellers() {
+            const query = this.agentQuery.trim().toLowerCase();
+            if (!query) {
+                return this.sellers.slice(0, 50);
+            }
+
+            return this.sellers
+                .filter((seller) => seller.name.toLowerCase().includes(query))
+                .slice(0, 50);
+        },
+        selectSeller(seller) {
+            this.agentQuery = seller.name;
+            this.selectedSellerId = seller.id;
+            this.showSuggestions = false;
+        },
+        clearSelectionOnType() {
+            this.selectedSellerId = '';
+            this.showSuggestions = true;
+        },
+    }">
         <div class="bg-white rounded-xl md:rounded-2xl shadow-xl p-3 md:p-6 border border-gray-100">
 
             <div class="flex space-x-3 md:space-x-6 border-b border-gray-200 mb-6">
@@ -80,8 +105,10 @@
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <select class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-md focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
-                        <option>หมวดหมู่ทรัพย์</option>
-                        <option>ทั้งหมด</option>
+                        <option value="">หมวดหมู่ทรัพย์ (ทั้งหมด)</option>
+                        @foreach ($propertyTypes as $type)
+                            <option value="{{ $type->id }}">{{ $type->name }}</option>
+                        @endforeach
                     </select>
                     <select class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-md focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
                         <option>จังหวัด</option>
@@ -156,12 +183,42 @@
             </div>
 
             <div x-show="tab === 'agent'" x-transition style="display: none;">
-                <div class="flex flex-col md:flex-row gap-4">
-                    <input type="text" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-md focus:ring-blue-500 focus:border-blue-500 block w-full p-3 pl-4" placeholder="ชื่อตัวแทนขาย">
-                    <button class="bg-blue-800 hover:bg-blue-900 text-white px-8 py-3 rounded-lg font-medium shadow w-full md:w-auto md:shrink-0 whitespace-nowrap">
+                <form method="GET" action="{{ route('properties.index') }}" class="flex flex-col md:flex-row gap-4">
+                    <input type="hidden" name="user_id" :value="selectedSellerId">
+
+                    <div class="relative w-full" @click.outside="showSuggestions = false">
+                        <input
+                            type="text"
+                            x-model="agentQuery"
+                            @focus="showSuggestions = true"
+                            @input="clearSelectionOnType()"
+                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-md focus:ring-blue-500 focus:border-blue-500 block w-full p-3 pl-4"
+                            placeholder="พิมพ์ชื่อตัวแทนขาย"
+                            autocomplete="off">
+
+                        <div x-show="showSuggestions" x-cloak class="absolute z-20 mt-1 max-h-64 w-full overflow-auto rounded-xl border border-gray-200 bg-white shadow-lg">
+                            <template x-if="filteredSellers.length === 0">
+                                <p class="px-4 py-3 text-sm text-gray-500">ไม่พบรายชื่อตัวแทน</p>
+                            </template>
+
+                            <template x-for="seller in filteredSellers" :key="seller.id">
+                                <button
+                                    type="button"
+                                    @click="selectSeller(seller)"
+                                    class="w-full border-b border-gray-100 px-4 py-3 text-left text-sm text-gray-700 transition last:border-b-0 hover:bg-blue-50 hover:text-blue-700">
+                                    <span x-text="seller.name"></span>
+                                </button>
+                            </template>
+                        </div>
+                    </div>
+
+                    <button
+                        type="submit"
+                        :disabled="!selectedSellerId"
+                        class="bg-blue-800 hover:bg-blue-900 text-white px-8 py-3 rounded-lg font-medium shadow w-full md:w-auto md:shrink-0 whitespace-nowrap disabled:cursor-not-allowed disabled:bg-gray-400">
                         ค้นหา
                     </button>
-                </div>
+                </form>
             </div>
 
         </div>
