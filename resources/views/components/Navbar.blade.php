@@ -22,20 +22,40 @@
 <header class="sticky top-0 z-50 bg-white shadow-sm">
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div class="flex h-20 items-center justify-between">
-            <div class="flex shrink-0 items-center">
+            <a href="{{ route('home') }}" class="flex shrink-0 items-center">
                 <img class="h-14 w-auto" src="{{ asset('images/logo/logo.png') }}" alt="">
                 <div class="heading-font ml-2 border-l-2 border-red-500 pl-2 text-md md:text-lg leading-tight text-blue-900">
                     แหล่งรับฝาก-ขายบ้าน-ที่ดิน และอสังหาฯ<br>
                     ในเขตกรุงเทพฯ และปริมณฑล
                 </div>
-            </div>
+            </a>
 
             <nav class="heading-font hidden space-x-8 md:flex lg:pr-44">
-                <a href="#" class="border-b-2 border-blue-700 pb-1 font-medium text-blue-700">หน้าหลัก</a>
-                <a href="#" class="pb-1 font-medium text-gray-600 hover:text-blue-700">รับฝากขายบ้าน-ที่ดิน</a>
-                <a href="#" class="pb-1 font-medium text-gray-600 hover:text-blue-700">แผนบริการ</a>
-                <a href="#" class="pb-1 font-medium text-gray-600 hover:text-blue-700">รับสมัครงาน</a>
-                <a href="#" class="pb-1 font-medium text-gray-600 hover:text-blue-700">ติดต่อเรา</a>
+                <a href="{{ route('home') }}" @class([ 'pb-1 font-medium' , 'border-b-2 border-blue-700 text-blue-700'=> request()->routeIs('home'),
+                    'text-gray-600 hover:text-blue-700' => ! request()->routeIs('home'),
+                    ])
+                    @if (request()->routeIs('home')) aria-current="page" @endif
+                    >หน้าหลัก</a>
+                <a href="{{ route('property-requests.index') }}" @class([ 'pb-1 font-medium' , 'border-b-2 border-blue-700 text-blue-700'=> request()->routeIs('property-requests.*'),
+                    'text-gray-600 hover:text-blue-700' => ! request()->routeIs('property-requests.*'),
+                    ])
+                    @if (request()->routeIs('property-requests.*')) aria-current="page" @endif
+                    >รับฝากขายบ้าน-ที่ดิน</a>
+                <a href="{{ route('services.index') }}" @class([ 'pb-1 font-medium' , 'border-b-2 border-blue-700 text-blue-700'=> request()->routeIs('services.*'),
+                    'text-gray-600 hover:text-blue-700' => ! request()->routeIs('services.*'),
+                    ])
+                    @if (request()->routeIs('services.*')) aria-current="page" @endif
+                    >แผนบริการ</a>
+                <a href="{{ route('careers.index') }}" @class([ 'pb-1 font-medium' , 'border-b-2 border-blue-700 text-blue-700'=> request()->routeIs('careers.*'),
+                    'text-gray-600 hover:text-blue-700' => ! request()->routeIs('careers.*'),
+                    ])
+                    @if (request()->routeIs('careers.*')) aria-current="page" @endif
+                    >รับสมัครงาน</a>
+                <a href="{{ route('contact.index') }}" @class([ 'pb-1 font-medium' , 'border-b-2 border-blue-700 text-blue-700'=> request()->routeIs('contact.*'),
+                    'text-gray-600 hover:text-blue-700' => ! request()->routeIs('contact.*'),
+                    ])
+                    @if (request()->routeIs('contact.*')) aria-current="page" @endif
+                    >ติดต่อเรา</a>
             </nav>
         </div>
     </div>

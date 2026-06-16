@@ -170,48 +170,25 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-6">
         <h2 class="text-xl md:text-2xl font-bold text-center text-blue-800 mb-4">ประเภทอสังหาฯ</h2>
         <div class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-4">
-            <a href="#" class="group flex flex-col items-center">
-                <div class="w-full aspect-square overflow-hidden rounded-xl border border-gray-200 mb-3 shadow-sm group-hover:shadow-md transition">
-                    <img src="{{ asset('images/cover/house.webp') }}" alt="บ้านเดี่ยว/บ้านแฝด" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
-                </div>
-                <h3 class="text-blue-800 font-semibold text-sm text-center">บ้านเดี่ยว/บ้านแฝด</h3>
-            </a>
-            <a href="#" class="group flex flex-col items-center">
-                <div class="w-full aspect-square overflow-hidden rounded-xl border border-gray-200 mb-3 shadow-sm group-hover:shadow-md transition">
-                    <img src="{{ asset('images/cover/townhome.webp') }}" alt="ทาวน์เฮ้าส์/ทาวน์โฮม" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
-                </div>
-                <h3 class="text-blue-800 font-semibold text-sm text-center">ทาวน์เฮ้าส์/ทาวน์โฮม</h3>
-            </a>
-            <a href="#" class="group flex flex-col items-center">
-                <div class="w-full aspect-square overflow-hidden rounded-xl border border-gray-200 mb-3 shadow-sm group-hover:shadow-md transition">
-                    <img src="{{ asset('images/cover/condo.webp') }}" alt="คอนโดมิเนียม" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
-                </div>
-                <h3 class="text-blue-800 font-semibold text-sm text-center">คอนโดมิเนียม</h3>
-            </a>
-            <a href="#" class="group flex flex-col items-center">
-                <div class="w-full aspect-square overflow-hidden rounded-xl border border-gray-200 mb-3 shadow-sm group-hover:shadow-md transition">
-                    <img src="{{ asset('images/cover/commercial-building.webp') }}" alt="ตึกแถว/อาคารพาณิชย์" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
-                </div>
-                <h3 class="text-blue-800 font-semibold text-sm text-center">ตึกแถว/อาคารพาณิชย์</h3>
-            </a>
-            <a href="#" class="group flex flex-col items-center">
-                <div class="w-full aspect-square overflow-hidden rounded-xl border border-gray-200 mb-3 shadow-sm group-hover:shadow-md transition">
-                    <img src="{{ asset('images/cover/land.webp') }}" alt="ที่ดินเปล่า" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
-                </div>
-                <h3 class="text-blue-800 font-semibold text-sm text-center">ที่ดินเปล่า</h3>
-            </a>
-            <a href="#" class="group flex flex-col items-center">
-                <div class="w-full aspect-square overflow-hidden rounded-xl border border-gray-200 mb-3 shadow-sm group-hover:shadow-md transition">
-                    <img src="{{ asset('images/cover/warehouse.webp') }}" alt="โกดัง/โรงงาน" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
-                </div>
-                <h3 class="text-blue-800 font-semibold text-sm text-center">โกดัง/โรงงาน</h3>
-            </a>
-            <a href="#" class="group flex flex-col items-center">
-                <div class="w-full aspect-square overflow-hidden rounded-xl border border-gray-200 mb-3 shadow-sm group-hover:shadow-md transition">
-                    <img src="{{ asset('images/cover/apartment.webp') }}" alt="อพาร์ทเมนต์/หอพัก อื่นๆ" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
-                </div>
-                <h3 class="text-blue-800 font-semibold text-sm text-center">อพาร์ทเมนต์/หอพัก<br>อื่นๆ</h3>
-            </a>
+            @forelse ($propertyTypes as $type)
+                <a href="{{ route('properties.index', ['asset_type_id' => $type->id]) }}" class="group flex flex-col items-center">
+                    <div class="w-full aspect-square overflow-hidden rounded-xl border border-gray-200 mb-3 shadow-sm group-hover:shadow-md transition">
+                        <img
+                            src="{{ $type->imageUrl ?? asset('images/cover/house.webp') }}"
+                            alt="{{ $type->name }}"
+                            class="w-full h-full object-cover group-hover:scale-110 transition duration-500"
+                            loading="lazy">
+                    </div>
+                    <h3 class="text-blue-800 font-semibold text-sm text-center">{{ $type->name }}</h3>
+                </a>
+            @empty
+                <a href="#" class="group flex flex-col items-center">
+                    <div class="w-full aspect-square overflow-hidden rounded-xl border border-gray-200 mb-3 shadow-sm group-hover:shadow-md transition">
+                        <img src="{{ asset('images/cover/house.webp') }}" alt="บ้านเดี่ยว/บ้านแฝด" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                    </div>
+                    <h3 class="text-blue-800 font-semibold text-sm text-center">บ้านเดี่ยว/บ้านแฝด</h3>
+                </a>
+            @endforelse
         </div>
     </div>
 

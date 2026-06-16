@@ -2,19 +2,34 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Artesaos\SEOTools\Facades\SEOMeta;
-use Artesaos\SEOTools\Facades\OpenGraph;
-use Artesaos\SEOTools\Facades\Twitter;
-use Artesaos\SEOTools\Facades\JsonLd;
+use App\Services\LoveThaiHome\Exceptions\LoveThaiHomeApiException;
+use App\Services\LoveThaiHome\LoveThaiHomeService;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 
 class HomeController extends Controller
 {
-    //
-
-    public function index()
+    public function index(LoveThaiHomeService $api): \Illuminate\View\View
     {
+        $propertyTypes = $this->loadPropertyTypes($api);
 
-        return view('pages.home.index');
+        return view('pages.home.index', compact('propertyTypes'));
+    }
+
+    /**
+     * @return Collection<int, \App\Data\LoveThaiHome\PropertyTypeData>
+     */
+    private function loadPropertyTypes(LoveThaiHomeService $api): Collection
+    {
+        try {
+            return $api->propertyTypes();
+        } catch (LoveThaiHomeApiException $exception) {
+            Log::warning('Failed to load property types from API.', [
+                'message' => $exception->getMessage(),
+                'status' => $exception->statusCode,
+            ]);
+
+            return collect();
+        }
     }
 }

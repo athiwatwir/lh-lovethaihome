@@ -1,4 +1,19 @@
 @php
+use App\Services\LoveThaiHome\Exceptions\LoveThaiHomeApiException;
+use App\Services\LoveThaiHome\LoveThaiHomeService;
+use Illuminate\Support\Facades\Log;
+
+$propertyTypes = collect();
+
+try {
+$propertyTypes = app(LoveThaiHomeService::class)->propertyTypes();
+} catch (LoveThaiHomeApiException $exception) {
+Log::warning('Failed to load property types for footer.', [
+'message' => $exception->getMessage(),
+'status' => $exception->statusCode,
+]);
+}
+
 $mobileNavItems = [
 [
 'label' => 'หน้าหลัก',
@@ -10,33 +25,33 @@ $mobileNavItems = [
 ],
 [
 'label' => 'รับฝากขายบ้าน-ที่ดิน',
-'short' => 'ฝากขาย',
-'href' => '#',
-'active' => false,
+'short' => 'ฝากขายบ้าน',
+'href' => route('property-requests.index'),
+'active' => request()->routeIs('property-requests.*'),
 'icon' => '
 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />',
 ],
 [
 'label' => 'แผนบริการ',
 'short' => 'แผนบริการ',
-'href' => '#',
-'active' => false,
+'href' => route('services.index'),
+'active' => request()->routeIs('services.*'),
 'icon' => '
 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />',
 ],
 [
 'label' => 'รับสมัครงาน',
 'short' => 'สมัครงาน',
-'href' => '#',
-'active' => false,
+'href' => route('careers.index'),
+'active' => request()->routeIs('careers.*'),
 'icon' => '
 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />',
 ],
 [
 'label' => 'ติดต่อเรา',
 'short' => 'ติดต่อ',
-'href' => '#',
-'active' => false,
+'href' => route('contact.index'),
+'active' => request()->routeIs('contact.*'),
 'icon' => '
 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />',
 ],
@@ -81,23 +96,25 @@ $mobileNavItems = [
             <div class="hidden md:block">
                 <h4 class="mb-4 font-bold text-blue-900">เมนูหลัก</h4>
                 <ul class="space-y-2 text-sm text-gray-600">
-                    <li><a href="#" class="hover:text-blue-600">รับฝากขายบ้าน-ที่ดิน</a></li>
-                    <li><a href="#" class="hover:text-blue-600">แผนบริการ</a></li>
-                    <li><a href="#" class="hover:text-blue-600">รับสมัครงาน</a></li>
-                    <li><a href="#" class="hover:text-blue-600">ติดต่อเรา</a></li>
+                    <li><a href="{{ route('property-requests.index') }}" class="hover:text-blue-600">รับฝากขายบ้าน-ที่ดิน</a></li>
+                    <li><a href="{{ route('services.index') }}" class="hover:text-blue-600">แผนบริการ</a></li>
+                    <li><a href="{{ route('careers.index') }}" class="hover:text-blue-600">รับสมัครงาน</a></li>
+                    <li><a href="{{ route('contact.index') }}" class="hover:text-blue-600">ติดต่อเรา</a></li>
                 </ul>
             </div>
 
             <div class="hidden md:block">
                 <h4 class="mb-4 font-bold text-blue-900">ประเภทอสังหาฯ</h4>
                 <ul class="space-y-2 text-sm text-gray-600">
-                    <li><a href="#" class="hover:text-blue-600">บ้านเดี่ยว/บ้านแฝด</a></li>
-                    <li><a href="#" class="hover:text-blue-600">ทาวน์เฮ้าส์/ทาวน์โฮม</a></li>
-                    <li><a href="#" class="hover:text-blue-600">คอนโดมิเนียม</a></li>
-                    <li><a href="#" class="hover:text-blue-600">ตึกแถว/อาคารพาณิชย์</a></li>
-                    <li><a href="#" class="hover:text-blue-600">ที่ดินเปล่า</a></li>
-                    <li><a href="#" class="hover:text-blue-600">โกดัง/โรงงาน</a></li>
-                    <li><a href="#" class="hover:text-blue-600">อพาร์ทเมนต์/หอพัก/อื่นๆ</a></li>
+                    @forelse ($propertyTypes as $type)
+                    <li>
+                        <a href="{{ route('properties.index', ['asset_type_id' => $type->id]) }}" class="hover:text-blue-600">
+                            {{ $type->name }}
+                        </a>
+                    </li>
+                    @empty
+                    <li class="text-gray-400">ไม่สามารถโหลดประเภททรัพย์ได้</li>
+                    @endforelse
                 </ul>
             </div>
 
