@@ -9,6 +9,8 @@ readonly class PropertyData
      * @param  array{id: string, name: string, code?: string}|null  $agent
      * @param  array{id: string, name: string}|null  $zone
      * @param  array<string, bool>|null  $listing
+     * @param  array<string, mixed>|null  $address
+     * @param  array<string, mixed>|null  $seller
      */
     public function __construct(
         public string $id,
@@ -24,6 +26,8 @@ readonly class PropertyData
         public ?string $thumbnailUrl,
         public int $imagesCount,
         public ?string $createdAt,
+        public ?array $address,
+        public ?array $seller,
     ) {}
 
     /**
@@ -45,23 +49,36 @@ readonly class PropertyData
             thumbnailUrl: isset($data['thumbnail_url']) ? (string) $data['thumbnail_url'] : null,
             imagesCount: (int) ($data['images_count'] ?? 0),
             createdAt: isset($data['created_at']) ? (string) $data['created_at'] : null,
+            address: isset($data['address']) && is_array($data['address']) ? $data['address'] : null,
+            seller: isset($data['seller']) && is_array($data['seller']) ? $data['seller'] : null,
         );
+    }
+
+    public function formattedAddress(): ?string
+    {
+        if (! $this->address) {
+            return null;
+        }
+
+        $parts = array_filter([
+            $this->address['address1'] ?? null,
+            $this->address['district'] ?? null,
+            $this->address['amphur'] ?? null,
+            $this->address['province_name'] ?? null,
+            isset($this->address['zipcode']) ? (string) $this->address['zipcode'] : null,
+        ]);
+
+        return $parts === [] ? null : trim(implode(' ', $parts));
     }
 
     public function formattedPrice(): string
     {
         if (($this->listing['rent'] ?? false) && $this->priceRent > 0) {
-            return number_format($this->priceRent).' บาท/เดือน';
+            return number_format($this->priceRent) . ' บาท/เดือน';
         }
 
         if ($this->priceAmount > 0) {
-            if ($this->priceAmount >= 1_000_000) {
-                $millions = $this->priceAmount / 1_000_000;
-
-                return rtrim(rtrim(number_format($millions, 2), '0'), '.').' ล้านบาท';
-            }
-
-            return number_format($this->priceAmount).' บาท';
+            return number_format($this->priceAmount) . ' บาท';
         }
 
         return 'ติดต่อสอบถาม';

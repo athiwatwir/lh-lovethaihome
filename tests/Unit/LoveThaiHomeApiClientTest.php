@@ -75,4 +75,44 @@ class LoveThaiHomeApiClientTest extends TestCase
 
         (new LoveThaiHomeApiClient)->propertyTypes();
     }
+
+    public function test_it_records_property_view(): void
+    {
+        Http::fake([
+            'https://api.example.com/v1/properties/property-1/views' => Http::response([
+                'asset_id' => 'property-1',
+                'view_date' => '2026-06-19',
+                'total_views' => 1,
+                'view_count' => 1,
+            ]),
+        ]);
+
+        $client = new LoveThaiHomeApiClient;
+        $response = $client->recordPropertyView('property-1');
+
+        $this->assertSame('property-1', $response['asset_id']);
+
+        Http::assertSent(function ($request) {
+            return $request->method() === 'POST'
+                && str_ends_with($request->url(), '/properties/property-1/views');
+        });
+    }
+
+    public function test_it_fetches_asset_zones(): void
+    {
+        Http::fake([
+            'https://api.example.com/v1/asset-zones' => Http::response([
+                'data' => [
+                    ['id' => 'zone-1', 'name' => 'โซนทิศเหนือ', 'seq' => 40],
+                    ['id' => 'zone-2', 'name' => 'โซนต่างจังหวัด', 'seq' => 60],
+                ],
+            ]),
+        ]);
+
+        $client = new LoveThaiHomeApiClient;
+        $zones = $client->zones();
+
+        $this->assertCount(2, $zones);
+        $this->assertSame('โซนต่างจังหวัด', $zones[1]->name);
+    }
 }

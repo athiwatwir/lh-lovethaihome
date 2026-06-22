@@ -7,6 +7,7 @@ use App\Data\LoveThaiHome\CustomerAssetData;
 use App\Data\LoveThaiHome\PaginatedResponse;
 use App\Data\LoveThaiHome\PropertyDetailData;
 use App\Data\LoveThaiHome\PropertyTypeData;
+use App\Data\LoveThaiHome\ZoneData;
 use App\Services\LoveThaiHome\Exceptions\LoveThaiHomeApiException;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\PendingRequest;
@@ -32,6 +33,7 @@ class LoveThaiHomeApiClient implements LoveThaiHomeApiClientInterface
             'asset_type_id' => $filters['asset_type_id'] ?? null,
             'agent_id' => $filters['agent_id'] ?? null,
             'user_id' => $filters['user_id'] ?? null,
+            'zone_id' => $filters['zone_id'] ?? null,
             'page' => $filters['page'] ?? 1,
             'per_page' => min(max((int) ($filters['per_page'] ?? 30), 1), 100),
         ], fn ($value) => $value !== null && $value !== '');
@@ -51,6 +53,22 @@ class LoveThaiHomeApiClient implements LoveThaiHomeApiClientInterface
         }
 
         return PropertyDetailData::fromArray($data);
+    }
+
+    public function zones(): array
+    {
+        $payload = $this->get('asset-zones');
+
+        return collect($payload['data'] ?? [])
+            ->map(fn (array $item) => ZoneData::fromArray($item))
+            ->sortBy('seq')
+            ->values()
+            ->all();
+    }
+
+    public function recordPropertyView(string $id): array
+    {
+        return $this->post('properties/'.urlencode($id).'/views');
     }
 
     public function agents(): array

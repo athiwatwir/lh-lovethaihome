@@ -7,8 +7,11 @@ use App\Data\LoveThaiHome\AgentData;
 use App\Data\LoveThaiHome\CustomerAssetData;
 use App\Data\LoveThaiHome\PaginatedResponse;
 use App\Data\LoveThaiHome\PropertyDetailData;
+use App\Data\LoveThaiHome\ZoneData;
+use App\Services\LoveThaiHome\Exceptions\LoveThaiHomeApiException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class LoveThaiHomeService
 {
@@ -33,6 +36,7 @@ class LoveThaiHomeService
      *     asset_type_id?: string|null,
      *     agent_id?: string|null,
      *     user_id?: string|null,
+     *     zone_id?: string|null,
      *     page?: int,
      *     per_page?: int,
      * }  $filters
@@ -45,6 +49,38 @@ class LoveThaiHomeService
     public function property(string $id): PropertyDetailData
     {
         return $this->client->property($id);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function recordPropertyView(string $id): array
+    {
+        return $this->client->recordPropertyView($id);
+    }
+
+    /**
+     * @return Collection<int, ZoneData>
+     */
+    public function zones(): Collection
+    {
+        return Cache::remember(
+            'lovethaihome.api.asset-zones',
+            config('lovethaihome_api.cache_ttl'),
+            function () {
+                try {
+                    return collect($this->client->zones());
+                } catch (LoveThaiHomeApiException $exception) {
+                    Log::warning('Failed to load asset zones from API, using fallback config.', [
+                        'message' => $exception->getMessage(),
+                        'status' => $exception->statusCode,
+                    ]);
+
+                    return collect(config('lovethaihome_zones'))
+                        ->map(fn (array $zone) => ZoneData::fromArray($zone));
+                }
+            },
+        );
     }
 
     public function findAgent(?string $agentId): ?AgentData

@@ -89,6 +89,8 @@ readonly class PropertyDetailData
             'thumbnail_url' => $this->thumbnailUrl,
             'images_count' => $this->imagesCount,
             'created_at' => $this->createdAt,
+            'address' => $this->address,
+            'seller' => $this->seller,
         ]);
     }
 
@@ -159,19 +161,7 @@ readonly class PropertyDetailData
 
     public function formattedAddress(): ?string
     {
-        if (! $this->address) {
-            return null;
-        }
-
-        $parts = array_filter([
-            $this->address['address1'] ?? null,
-            $this->address['district'] ?? null,
-            $this->address['amphur'] ?? null,
-            $this->address['province_name'] ?? null,
-            isset($this->address['zipcode']) ? ' '.$this->address['zipcode'] : null,
-        ]);
-
-        return $parts === [] ? null : trim(implode(' ', $parts));
+        return $this->toPropertyData()->formattedAddress();
     }
 
     /**

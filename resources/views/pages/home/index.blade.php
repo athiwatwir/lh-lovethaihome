@@ -107,7 +107,7 @@
                     <select class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-md focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
                         <option value="">หมวดหมู่ทรัพย์ (ทั้งหมด)</option>
                         @foreach ($propertyTypes as $type)
-                            <option value="{{ $type->id }}">{{ $type->name }}</option>
+                        <option value="{{ $type->id }}">{{ $type->name }}</option>
                         @endforeach
                     </select>
                     <select class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-md focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
@@ -187,14 +187,7 @@
                     <input type="hidden" name="user_id" :value="selectedSellerId">
 
                     <div class="relative w-full" @click.outside="showSuggestions = false">
-                        <input
-                            type="text"
-                            x-model="agentQuery"
-                            @focus="showSuggestions = true"
-                            @input="clearSelectionOnType()"
-                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-md focus:ring-blue-500 focus:border-blue-500 block w-full p-3 pl-4"
-                            placeholder="พิมพ์ชื่อตัวแทนขาย"
-                            autocomplete="off">
+                        <input type="text" x-model="agentQuery" @focus="showSuggestions = true" @input="clearSelectionOnType()" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-md focus:ring-blue-500 focus:border-blue-500 block w-full p-3 pl-4" placeholder="พิมพ์ชื่อตัวแทนขาย" autocomplete="off">
 
                         <div x-show="showSuggestions" x-cloak class="absolute z-20 mt-1 max-h-64 w-full overflow-auto rounded-xl border border-gray-200 bg-white shadow-lg">
                             <template x-if="filteredSellers.length === 0">
@@ -202,20 +195,14 @@
                             </template>
 
                             <template x-for="seller in filteredSellers" :key="seller.id">
-                                <button
-                                    type="button"
-                                    @click="selectSeller(seller)"
-                                    class="w-full border-b border-gray-100 px-4 py-3 text-left text-sm text-gray-700 transition last:border-b-0 hover:bg-blue-50 hover:text-blue-700">
+                                <button type="button" @click="selectSeller(seller)" class="w-full border-b border-gray-100 px-4 py-3 text-left text-sm text-gray-700 transition last:border-b-0 hover:bg-blue-50 hover:text-blue-700">
                                     <span x-text="seller.name"></span>
                                 </button>
                             </template>
                         </div>
                     </div>
 
-                    <button
-                        type="submit"
-                        :disabled="!selectedSellerId"
-                        class="bg-blue-800 hover:bg-blue-900 text-white px-8 py-3 rounded-lg font-medium shadow w-full md:w-auto md:shrink-0 whitespace-nowrap disabled:cursor-not-allowed disabled:bg-gray-400">
+                    <button type="submit" :disabled="!selectedSellerId" class="bg-blue-800 hover:bg-blue-900 text-white px-8 py-3 rounded-lg font-medium shadow w-full md:w-auto md:shrink-0 whitespace-nowrap disabled:cursor-not-allowed disabled:bg-gray-400">
                         ค้นหา
                     </button>
                 </form>
@@ -228,31 +215,35 @@
         <h2 class="text-xl md:text-2xl font-bold text-center text-blue-800 mb-4">ประเภทอสังหาฯ</h2>
         <div class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-4">
             @forelse ($propertyTypes as $type)
-                <a href="{{ route('properties.index', ['asset_type_id' => $type->id]) }}" class="group flex flex-col items-center">
-                    <div class="w-full aspect-square overflow-hidden rounded-xl border border-gray-200 mb-3 shadow-sm group-hover:shadow-md transition">
-                        <img
-                            src="{{ $type->imageUrl ?? asset('images/cover/house.webp') }}"
-                            alt="{{ $type->name }}"
-                            class="w-full h-full object-cover group-hover:scale-110 transition duration-500"
-                            loading="lazy">
-                    </div>
-                    <h3 class="text-blue-800 font-semibold text-sm text-center">{{ $type->name }}</h3>
-                </a>
+            <a href="{{ route('properties.index', ['asset_type_id' => $type->id]) }}" class="group flex flex-col items-center">
+                <div class="w-full aspect-square overflow-hidden rounded-xl border border-gray-200 mb-3 shadow-sm group-hover:shadow-md transition">
+                    <img src="{{ $type->imageUrl ?? asset('images/cover/house.webp') }}" alt="{{ $type->name }}" class="w-full h-full object-cover group-hover:scale-110 transition duration-500" loading="lazy">
+                </div>
+                <h3 class="text-blue-800 font-semibold text-sm text-center">{{ $type->name }}</h3>
+            </a>
             @empty
-                <a href="#" class="group flex flex-col items-center">
-                    <div class="w-full aspect-square overflow-hidden rounded-xl border border-gray-200 mb-3 shadow-sm group-hover:shadow-md transition">
-                        <img src="{{ asset('images/cover/house.webp') }}" alt="บ้านเดี่ยว/บ้านแฝด" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
-                    </div>
-                    <h3 class="text-blue-800 font-semibold text-sm text-center">บ้านเดี่ยว/บ้านแฝด</h3>
-                </a>
+            <a href="#" class="group flex flex-col items-center">
+                <div class="w-full aspect-square overflow-hidden rounded-xl border border-gray-200 mb-3 shadow-sm group-hover:shadow-md transition">
+                    <img src="{{ asset('images/cover/house.webp') }}" alt="บ้านเดี่ยว/บ้านแฝด" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                </div>
+                <h3 class="text-blue-800 font-semibold text-sm text-center">บ้านเดี่ยว/บ้านแฝด</h3>
+            </a>
             @endforelse
         </div>
     </div>
 
     <div class="bg-blue-50/50 py-8">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
-                <div class="bg-white rounded-3xl p-4 md:p-8 shadow-sm border border-blue-100">
+            <div class="grid grid-cols-1 items-center gap-10 lg:grid-cols-2">
+                <div class="flex w-full items-center justify-center">
+                    <div class="w-full max-w-3xl overflow-hidden rounded-2xl bg-black shadow-lg">
+                        <div class="relative aspect-video w-full">
+                            <iframe class="absolute inset-0 h-full w-full border-0" src="https://www.youtube.com/embed/p7ZYIRII3FM?start=1" title="VDO: ข้อดีในการฝากขายกับทางบริษัท" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen loading="lazy"></iframe>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl p-2 md:p-4 shadow-sm border border-blue-100">
                     <h3 class="text-xl md:text-2xl font-bold text-blue-800 text-center mb-4 md:mb-8">ข้อดีในการฝากขายกับทางบริษัทเรา</h3>
                     <ul class="space-y-6">
                         <li class="flex items-start">
@@ -282,12 +273,7 @@
                     </ul>
                 </div>
 
-                <div class="bg-blue-600 rounded-xl p-1 shadow-lg overflow-hidden flex flex-col">
 
-                    <div class="relative flex-grow aspect-video bg-black rounded-b-2xl overflow-hidden">
-                        <iframe class="absolute inset-0 h-full w-full" src="https://www.youtube.com/embed/uwaVZ6KMrno?start=1" title="VDO: ข้อดีในการฝากขายกับทางบริษัท" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen loading="lazy"></iframe>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
@@ -295,8 +281,8 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-10">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div class="bg-white rounded-2xl p-6 border border-gray-200 flex items-center shadow-sm">
-                <div class="w-16 h-16 bg-yellow-100 rounded-full flex-shrink-0 flex items-center justify-center mr-4">
-                    <img src="{{ asset('images/treasury.png') }}" alt="Appraisal" class="w-10 h-10">
+                <div class="w-16 h-16 flex-shrink-0 flex items-center justify-center mr-4">
+                    <img src="{{ asset('images/treasury.png') }}" alt="Appraisal" class="w-16 h-16">
                 </div>
                 <div>
                     <h4 class="font-bold text-blue-900">ค้นหาราคาประเมิน<br>(กรมธนารักษ์)</h4>
@@ -304,8 +290,8 @@
                 </div>
             </div>
             <div class="bg-white rounded-2xl p-6 border border-gray-200 flex items-center shadow-sm">
-                <div class="w-16 h-16 bg-gray-800 rounded-full flex-shrink-0 flex items-center justify-center mr-4">
-                    <img src="{{ asset('images/lands-logo.jpg') }}" alt="LandsMaps" class="w-10 h-10">
+                <div class="w-16 h-16 flex-shrink-0 flex items-center justify-center mr-4">
+                    <img src="{{ asset('images/lands-map.webp') }}" alt="LandsMaps" class="w-16 h-16">
                 </div>
                 <div>
                     <h4 class="font-bold text-blue-900">ค้นหาตำแหน่งแปลงที่ดิน<br>(LandsMaps)</h4>
@@ -313,40 +299,44 @@
                 </div>
             </div>
             <div class="bg-white rounded-2xl p-6 border border-gray-200 flex items-center shadow-sm">
-                <div class="w-16 h-16 bg-green-100 rounded-full flex-shrink-0 flex items-center justify-center mr-4">
-                    <img src="https://placehold.co/50x50/transparent/15803d?text=DOL" alt="DOL" class="w-10 h-10">
+                <div class="w-16 h-16 flex-shrink-0 flex items-center justify-center mr-4">
+                    <img src="{{ asset('images/dol.webp') }}" alt="DOL" class="w-16 h-16">
                 </div>
                 <div>
                     <h4 class="font-bold text-blue-900">กรมที่ดิน (DOL)</h4>
-                    <button class="mt-2 bg-blue-600 text-white text-xs px-4 py-1.5 rounded hover:bg-blue-700">เข้าสู่เว็บไซต์</button>
+                    <a href="https://dol.go.th/" target="_blank" class="mt-2 bg-blue-600 text-white text-xs px-4 py-1.5 rounded hover:bg-blue-700">เข้าสู่เว็บไซต์</a>
                 </div>
             </div>
         </div>
     </div>
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-10">
-        <h3 class="text-2xl font-bold text-center text-blue-800 mb-8">ดาวน์โหลดเอกสารสำคัญ</h3>
+        <h3 class="text-2xl font-bold text-center text-blue-800 mb-4">ดาวน์โหลดเอกสารสำคัญ</h3>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div class="bg-white rounded-2xl p-6 border border-gray-200 flex items-center shadow-sm justify-between">
                 <div class="flex items-center">
                     <img src="https://placehold.co/40x50/white/ef4444?text=PDF" alt="PDF" class="w-10 mr-4">
                     <h4 class="font-bold text-blue-900 text-sm">สัญญาแต่งตั้งตัวแทนขาย</h4>
                 </div>
-                <button class="bg-blue-600 text-white text-xs px-4 py-2 rounded hover:bg-blue-700">ดาวน์โหลด</button>
+                <a href="{{ asset('files/sales-agency-agreement.pdf') }}" download class="shrink-0 bg-blue-600 text-white text-xs px-4 py-2 rounded hover:bg-blue-700">
+                    ดาวน์โหลด
+                </a>
             </div>
             <div class="bg-white rounded-2xl p-6 border border-gray-200 flex items-center shadow-sm justify-between">
                 <div class="flex items-center">
                     <img src="https://placehold.co/40x50/white/ef4444?text=PDF" alt="PDF" class="w-10 mr-4">
                     <h4 class="font-bold text-blue-900 text-sm">สัญญาจะซื้อจะขาย</h4>
                 </div>
-                <button class="bg-blue-600 text-white text-xs px-4 py-2 rounded hover:bg-blue-700">ดาวน์โหลด</button>
+                <a href="{{ asset('files/agreement.pdf') }}" download class="shrink-0 bg-blue-600 text-white text-xs px-4 py-2 rounded hover:bg-blue-700">
+                    ดาวน์โหลด
+                </a>
             </div>
             <div class="bg-white rounded-2xl p-6 border border-gray-200 flex items-center shadow-sm justify-between">
                 <div class="flex items-center">
                     <img src="https://placehold.co/50x50/transparent/ef4444?text=Map" alt="Map" class="w-10 mr-4">
                     <h4 class="font-bold text-blue-900 text-sm">ที่ตั้งของบริษัท</h4>
                 </div>
-                <button class="bg-blue-600 text-white text-xs px-4 py-2 rounded hover:bg-blue-700">ดูแผนที่</button>
+                <button class="shrink-0 bg-blue-600 text-white text-xs px-4 py-2 rounded hover:bg-blue-700">ดูแผนที่</button>
             </div>
         </div>
     </div>

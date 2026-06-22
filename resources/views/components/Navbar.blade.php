@@ -1,4 +1,5 @@
-{{-- Desktop: ลอยเหนือ header ชิดขวาบน --}}
+{{-- Desktop: ลอยเหนือ header ชิดขวาบน (เฉพาะหน้าแรก) --}}
+@if (request()->routeIs('home'))
 <aside class="pointer-events-none fixed top-3 right-3 z-[60] hidden sm:top-2 sm:right-4 lg:block" aria-label="เบอร์ติดต่อ">
     <div class="pointer-events-auto rounded-xl border border-white/70 bg-white/70 px-4 py-2.5 text-right shadow-md shadow-blue-900/8 ring-1 ring-blue-100/50 backdrop-blur-md">
         <a href="tel:0815652025" class="group flex items-center justify-end gap-1 text-xl font-bold leading-tight text-red-700 transition-colors hover:text-blue-700">
@@ -18,6 +19,7 @@
         <span class="-mt-0.5 block text-base text-gray-500">คุณจุ๋ม</span>
     </div>
 </aside>
+@endif
 
 <header class="sticky top-0 z-50 bg-white shadow-sm">
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -30,7 +32,8 @@
                 </div>
             </a>
 
-            <nav class="heading-font hidden space-x-8 md:flex lg:pr-44">
+            <nav @class([ 'heading-font hidden space-x-8 md:flex' , 'lg:pr-44'=> request()->routeIs('home'),
+                ])>
                 <a href="{{ route('home') }}" @class([ 'pb-1 font-medium' , 'border-b-2 border-blue-700 text-blue-700'=> request()->routeIs('home'),
                     'text-gray-600 hover:text-blue-700' => ! request()->routeIs('home'),
                     ])
@@ -61,6 +64,7 @@
     </div>
 
     {{-- Mobile: แถวเบอร์โทรเต็มความกว้าง ต่อจาก header --}}
+    @if (request()->routeIs('home'))
     <div class="w-full border-t border-gray-200 bg-gray-50/90 lg:hidden" aria-label="เบอร์ติดต่อ">
         <div class="grid grid-cols-2 divide-x divide-gray-200">
             <a href="tel:0815652025" class="flex flex-col items-center gap-0.5 px-3 py-1 text-center transition-colors hover:bg-blue-50/80">
@@ -84,4 +88,5 @@
             </a>
         </div>
     </div>
+    @endif
 </header>

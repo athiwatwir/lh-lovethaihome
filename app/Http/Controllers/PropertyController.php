@@ -9,6 +9,7 @@ use App\Data\LoveThaiHome\PropertyTypeData;
 use App\Services\LoveThaiHome\Exceptions\LoveThaiHomeApiException;
 use App\Services\LoveThaiHome\LoveThaiHomeService;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
@@ -24,10 +25,13 @@ class PropertyController extends Controller
         $userId = $request->string('user_id')->toString() ?: null;
         $page = max(1, (int) $request->query('page', 1));
         $perPage = min(max((int) $request->query('per_page', 30), 1), 100);
+        $zoneId = $request->string('zone_id')->toString() ?: null;
 
         $propertyTypes = $this->loadPropertyTypes($api);
+        $zones = $this->loadZones($api);
+        $currentZone = $this->resolveCurrentZone($zoneId, $zones);
         $currentType = $assetTypeId
-            ? $propertyTypes->first(fn (PropertyTypeData $type) => $type->id === $assetTypeId)
+            ? $propertyTypes->first(fn(PropertyTypeData $type) => $type->id === $assetTypeId)
             : null;
 
         $properties = collect();
@@ -35,29 +39,32 @@ class PropertyController extends Controller
         $apiError = null;
 
         try {
-            $response = $api->properties([
-                'asset_type_id' => $assetTypeId,
-                'agent_id' => $agentId,
-                'user_id' => $userId,
-                'page' => $page,
-                'per_page' => $perPage,
-            ]);
+            if ($zoneId) {
+                $response = $api->properties([
+                    'asset_type_id' => $assetTypeId,
+                    'agent_id' => $agentId,
+                    'user_id' => $userId,
+                    'zone_id' => $zoneId === 'all' ? null : $zoneId,
+                    'page' => $page,
+                    'per_page' => $perPage,
+                ]);
 
-            $properties = collect($response->data)
-                ->map(fn (array $item) => PropertyData::fromArray($item));
+                $properties = collect($response->data)
+                    ->map(fn (array $item) => PropertyData::fromArray($item));
 
-            $meta = $response->meta ?? [];
+                $meta = $response->meta ?? [];
 
-            $paginator = new LengthAwarePaginator(
-                $properties,
-                (int) ($meta['total'] ?? $properties->count()),
-                (int) ($meta['per_page'] ?? $perPage),
-                (int) ($meta['current_page'] ?? $page),
-                [
-                    'path' => $request->url(),
-                    'query' => $request->query(),
-                ],
-            );
+                $paginator = new LengthAwarePaginator(
+                    $properties,
+                    (int) ($meta['total'] ?? $properties->count()),
+                    (int) ($meta['per_page'] ?? $perPage),
+                    (int) ($meta['current_page'] ?? $page),
+                    [
+                        'path' => $request->url(),
+                        'query' => $request->query(),
+                    ],
+                );
+            }
         } catch (LoveThaiHomeApiException $exception) {
             Log::warning('Failed to load properties from API.', [
                 'message' => $exception->getMessage(),
@@ -79,6 +86,9 @@ class PropertyController extends Controller
             'currentUser' => $currentUser,
             'apiError' => $apiError,
             'totalCount' => $paginator?->total() ?? 0,
+            'zoneId' => $zoneId,
+            'zones' => $zones,
+            'currentZone' => $currentZone,
         ]);
     }
 
@@ -106,6 +116,21 @@ class PropertyController extends Controller
             'property' => $detail,
             'user' => $user,
         ]);
+    }
+
+    public function recordView(string $property, LoveThaiHomeService $api): Response
+    {
+        try {
+            $api->recordPropertyView($property);
+        } catch (LoveThaiHomeApiException $exception) {
+            Log::warning('Failed to record property view.', [
+                'message' => $exception->getMessage(),
+                'status' => $exception->statusCode,
+                'property_id' => $property,
+            ]);
+        }
+
+        return response()->noContent();
     }
 
     private function resolveUser(LoveThaiHomeService $api, PropertyDetailData $detail): ?AgentData
@@ -158,5 +183,49 @@ class PropertyController extends Controller
 
             return collect();
         }
+    }
+
+    /**
+     * @return Collection<int, array{id: string, name: string, button_class: string, dot_class: string}>
+     */
+    private function loadZones(LoveThaiHomeService $api): Collection
+    {
+        return $api->zones()
+            ->map(fn ($zone) => $this->formatZoneOption($zone->id, $zone->name))
+            ->values();
+    }
+
+    /**
+     * @param  Collection<int, array{id: string, name: string, button_class: string, dot_class: string}>  $zones
+     * @return array{id: string, name: string, button_class: string, dot_class: string}|null
+     */
+    private function resolveCurrentZone(?string $zoneId, Collection $zones): ?array
+    {
+        if (! $zoneId) {
+            return null;
+        }
+
+        if ($zoneId === 'all') {
+            return $this->formatZoneOption('all', 'ทั้งหมด');
+        }
+
+        return $zones->first(fn (array $zone) => $zone['id'] === $zoneId);
+    }
+
+    /**
+     * @return array{id: string, name: string, button_class: string, dot_class: string}
+     */
+    private function formatZoneOption(string $id, string $name): array
+    {
+        $style = config('lovethaihome_zone_styles.zones.'.$id)
+            ?? config('lovethaihome_zone_styles.'.$id)
+            ?? config('lovethaihome_zone_styles.default');
+
+        return [
+            'id' => $id,
+            'name' => $name,
+            'button_class' => $style['button_class'],
+            'dot_class' => $style['dot_class'],
+        ];
     }
 }

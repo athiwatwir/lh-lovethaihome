@@ -6,6 +6,7 @@ use App\Data\LoveThaiHome\CustomerAssetData;
 use App\Data\LoveThaiHome\PaginatedResponse;
 use App\Data\LoveThaiHome\PropertyDetailData;
 use App\Data\LoveThaiHome\PropertyTypeData;
+use App\Data\LoveThaiHome\ZoneData;
 
 interface LoveThaiHomeApiClientInterface
 {
@@ -19,6 +20,7 @@ interface LoveThaiHomeApiClientInterface
      *     asset_type_id?: string|null,
      *     agent_id?: string|null,
      *     user_id?: string|null,
+     *     zone_id?: string|null,
      *     page?: int,
      *     per_page?: int,
      * }  $filters
@@ -26,6 +28,16 @@ interface LoveThaiHomeApiClientInterface
     public function properties(array $filters = []): PaginatedResponse;
 
     public function property(string $id): PropertyDetailData;
+
+    /**
+     * @return list<ZoneData>
+     */
+    public function zones(): array;
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function recordPropertyView(string $id): array;
 
     /**
      * @return list<array<string, mixed>>

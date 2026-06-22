@@ -15,6 +15,8 @@
     'resources/js/app.js'
     ])
 
+    @stack('head')
+
 </head>
 
 <body class="max-md:pb-[calc(4.75rem+env(safe-area-inset-bottom))]">

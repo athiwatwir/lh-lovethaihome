@@ -17,6 +17,9 @@ use Illuminate\Support\Facades\Route;
 // ── Home ─────────────────────────────────────────────────────────────────────
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/properties', [PropertyController::class, 'index'])->name('properties.index');
+Route::post('/properties/{property}/views', [PropertyController::class, 'recordView'])
+    ->whereUuid('property')
+    ->name('properties.views');
 Route::get('/properties/{property}', [PropertyController::class, 'show'])
     ->whereUuid('property')
     ->name('properties.show');
