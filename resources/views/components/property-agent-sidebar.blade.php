@@ -60,6 +60,6 @@
     @endif
 
     <div class="mt-6 rounded-xl bg-blue-700 px-4 py-4 text-center text-white">
-        <p class="heading-font mt-1 text-xl font-bold">ปรึกษาฟรี ไม่มีค่าใช้จ่าย</p>
+        <p class="heading-font mt-1 text-xl font-bold">ปรึกษาฟรี ไม่มีค่าใช้จ่าย!</p>
     </div>
 </aside>

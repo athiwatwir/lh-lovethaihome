@@ -98,6 +98,7 @@ $mobileNavItems = [
                 <ul class="space-y-2 text-sm text-gray-600">
                     <li><a href="{{ route('property-requests.index') }}" class="hover:text-blue-600">รับฝากขายบ้าน-ที่ดิน</a></li>
                     <li><a href="{{ route('services.index') }}" class="hover:text-blue-600">แผนบริการ</a></li>
+                    <li><a href="{{ route('sellers.index') }}" class="hover:text-blue-600">รายชื่อตัวแทนขาย</a></li>
                     <li><a href="{{ route('careers.index') }}" class="hover:text-blue-600">รับสมัครงาน</a></li>
                     <li><a href="{{ route('contact.index') }}" class="hover:text-blue-600">ติดต่อเรา</a></li>
                 </ul>

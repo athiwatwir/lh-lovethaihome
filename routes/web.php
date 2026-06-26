@@ -3,6 +3,7 @@
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PropertyController;
 use App\Http\Controllers\PropertyRequestController;
+use App\Http\Controllers\SellerController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\CareerController;
 use App\Http\Controllers\ContactController;
@@ -29,5 +30,6 @@ Route::post('/property-requests', [PropertyRequestController::class, 'store'])
     ->name('property-requests.store');
 
 Route::get('/services', [ServiceController::class, 'index'])->name('services.index');
+Route::get('/sellers', [SellerController::class, 'index'])->name('sellers.index');
 Route::get('/careers', [CareerController::class, 'index'])->name('careers.index');
 Route::get('/contact', [ContactController::class, 'index'])->name('contact.index');

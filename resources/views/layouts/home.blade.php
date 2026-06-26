@@ -27,5 +27,6 @@
 
     <x-Footer />
 
+    @stack('scripts')
 </body>
 </html>

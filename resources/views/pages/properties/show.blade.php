@@ -68,7 +68,14 @@ $gallery = $property->galleryImages();
                     {{ $property->name }}
                 </h1>
             </div>
-            <p class="text-2xl font-bold text-red-700 heading-font sm:text-3xl">{{ $property->formattedPrice() }}</p>
+            <p class="text-2xl font-bold text-red-700 heading-font sm:text-3xl">
+                @foreach ($property->priceDisplayLines() as $priceLine)
+                <span class="block sm:inline">
+                    <span class="border-s border-gray-200 px-2">{{ $priceLine['label'] }}</span>
+                    <span>{{ $priceLine['value'] }}</span>
+                </span>
+                @endforeach
+            </p>
         </div>
 
         <div class="flex flex-col gap-8 lg:flex-row">
@@ -90,8 +97,28 @@ $gallery = $property->galleryImages();
                     @endif
                 </div>
 
+                @if ($youtubeEmbedUrl = $property->youtubeEmbedUrl())
+                <div class="mt-3 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm md:mt-6">
+                    <div class="border-b border-gray-100 px-3 py-3 md:px-4">
+                        <h2 class="heading-font text-base font-bold text-blue-900 sm:text-lg">วิดีโอแนะนำทรัพย์</h2>
+                    </div>
+                    <div class="bg-black">
+                        <div class="relative aspect-video w-full">
+                            <iframe
+                                class="absolute inset-0 h-full w-full border-0"
+                                src="{{ $youtubeEmbedUrl }}"
+                                title="วิดีโอ {{ $property->name }}"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                referrerpolicy="strict-origin-when-cross-origin"
+                                allowfullscreen
+                                loading="lazy"></iframe>
+                        </div>
+                    </div>
+                </div>
+                @endif
+
                 {{-- Main info --}}
-                <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:p-6">
+                <div class="mt-3 md:mt-6 rounded-xl border border-gray-200 bg-white p-2 md:p-4 shadow-sm">
 
 
 
@@ -130,6 +157,8 @@ $gallery = $property->galleryImages();
                     </div>
                     @endif
 
+
+
                     <div class="mt-6 border-t border-gray-100 pt-6">
                         <h2 class="text-xs font-semibold text-gray-500 sm:text-sm">รหัสทรัพย์ #{{ $property->code }}</h2>
                         <h2 class="heading-font text-base font-bold text-blue-900 sm:text-lg">รายละเอียดเพิ่มเติม</h2>
@@ -141,6 +170,10 @@ $gallery = $property->galleryImages();
                         <p class="mt-3 leading-relaxed text-gray-700">-</p>
                         @endif
                     </div>
+
+                    @if ($property->hasMapCoordinates())
+                    <x-property-map :latitude="$property->latitude" :longitude="$property->longitude" :label="$property->name" :google-maps-url="$property->googleMapsUrl()" :google-maps-directions-url="$property->googleMapsDirectionsUrl()" />
+                    @endif
 
 
                 </div>

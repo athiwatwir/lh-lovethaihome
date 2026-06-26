@@ -182,12 +182,13 @@
                 </div>
             </div>
 
-            <div x-show="tab === 'agent'" x-transition style="display: none;">
-                <form method="GET" action="{{ route('properties.index') }}" class="flex flex-col md:flex-row gap-4">
+            <div x-show="tab === 'agent'" x-transition style="display: none;" class="space-y-4">
+                <form method="GET" action="{{ route('properties.index') }}" class="flex flex-col gap-4 md:flex-row">
                     <input type="hidden" name="user_id" :value="selectedSellerId">
+                    <input type="hidden" name="zone_id" value="all">
 
                     <div class="relative w-full" @click.outside="showSuggestions = false">
-                        <input type="text" x-model="agentQuery" @focus="showSuggestions = true" @input="clearSelectionOnType()" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-md focus:ring-blue-500 focus:border-blue-500 block w-full p-3 pl-4" placeholder="พิมพ์ชื่อตัวแทนขาย" autocomplete="off">
+                        <input type="text" x-model="agentQuery" @focus="showSuggestions = true" @input="clearSelectionOnType()" class="block w-full rounded-md border border-gray-300 bg-gray-50 p-3 pl-4 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500" placeholder="พิมพ์ชื่อตัวแทนขาย" autocomplete="off">
 
                         <div x-show="showSuggestions" x-cloak class="absolute z-20 mt-1 max-h-64 w-full overflow-auto rounded-xl border border-gray-200 bg-white shadow-lg">
                             <template x-if="filteredSellers.length === 0">
@@ -202,10 +203,35 @@
                         </div>
                     </div>
 
-                    <button type="submit" :disabled="!selectedSellerId" class="bg-blue-800 hover:bg-blue-900 text-white px-8 py-3 rounded-lg font-medium shadow w-full md:w-auto md:shrink-0 whitespace-nowrap disabled:cursor-not-allowed disabled:bg-gray-400">
+                    <button type="submit" :disabled="!selectedSellerId" class="w-full whitespace-nowrap rounded-lg bg-blue-800 px-8 py-3 font-medium text-white shadow transition hover:bg-blue-900 disabled:cursor-not-allowed disabled:bg-gray-400 md:w-auto md:shrink-0">
                         ค้นหา
                     </button>
                 </form>
+
+                <div class="flex items-center gap-3">
+                    <div class="h-px flex-1 bg-gray-200"></div>
+                    <span class="text-xs font-medium text-gray-400">หรือ</span>
+                    <div class="h-px flex-1 bg-gray-200"></div>
+                </div>
+
+                <a
+                    href="{{ route('sellers.index') }}"
+                    class="group flex w-full items-center justify-between gap-3 rounded-xl border-2 border-blue-200 bg-linear-to-r from-blue-50 to-indigo-50 px-4 py-3.5 shadow-sm transition hover:border-blue-400 hover:from-blue-100 hover:to-indigo-100 md:px-5">
+                    <span class="flex min-w-0 items-center gap-3">
+                        <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-700 text-white shadow-sm transition group-hover:bg-blue-800">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                            </svg>
+                        </span>
+                        <span class="min-w-0 text-left">
+                            <span class="block text-sm font-semibold text-blue-900 md:text-base">ดูตัวแทนขายทั้งหมด</span>
+                            <span class="block truncate text-xs text-blue-700/80">โปรไฟล์ ติดต่อ และทรัพย์ของแต่ละคน</span>
+                        </span>
+                    </span>
+                    <svg class="h-5 w-5 shrink-0 text-blue-700 transition group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                </a>
             </div>
 
         </div>

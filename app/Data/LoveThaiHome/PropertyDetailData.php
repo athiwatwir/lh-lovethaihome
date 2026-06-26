@@ -38,6 +38,9 @@ readonly class PropertyDetailData
         public ?float $areaWah,
         public ?int $pricePerWah,
         public ?array $seller,
+        public ?float $latitude,
+        public ?float $longitude,
+        public ?string $youtubeLink,
     ) {}
 
     /**
@@ -70,6 +73,13 @@ readonly class PropertyDetailData
             areaWah: isset($data['area_wah']) ? (float) $data['area_wah'] : null,
             pricePerWah: isset($data['price_per_wah']) ? (int) $data['price_per_wah'] : null,
             seller: isset($data['seller']) ? (array) $data['seller'] : null,
+            latitude: self::parseCoordinate($data, 'latitude')
+                ?? (isset($data['address']) && is_array($data['address']) ? self::parseCoordinate($data['address'], 'latitude') : null),
+            longitude: self::parseCoordinate($data, 'longitude')
+                ?? (isset($data['address']) && is_array($data['address']) ? self::parseCoordinate($data['address'], 'longitude') : null),
+            youtubeLink: isset($data['youtube_link']) && $data['youtube_link'] !== ''
+                ? trim((string) $data['youtube_link'])
+                : null,
         );
     }
 
@@ -118,6 +128,37 @@ readonly class PropertyDetailData
     }
 
     /**
+     * @return list<array{label: string, value: string}>
+     */
+    public function priceDisplayLines(): array
+    {
+        $lines = [];
+
+        if ($this->priceAmount > 0) {
+            $lines[] = [
+                'label' => 'ราคา',
+                'value' => number_format($this->priceAmount) . ' บาท',
+            ];
+        }
+
+        if ($this->pricePerWah > 0) {
+            $lines[] = [
+                'label' => 'ราคาต่อ ตรว.',
+                'value' => number_format($this->pricePerWah) . ' บาท',
+            ];
+        }
+
+        if ($this->priceRent > 0) {
+            $lines[] = [
+                'label' => 'เช่า',
+                'value' => number_format($this->priceRent) . ' บาท/เดือน',
+            ];
+        }
+
+        return $lines;
+    }
+
+    /**
      * @return list<string>
      */
     public function listingLabels(): array
@@ -130,15 +171,15 @@ readonly class PropertyDetailData
         $parts = [];
 
         if ($this->areaRai > 0) {
-            $parts[] = rtrim(rtrim(number_format($this->areaRai, 2), '0'), '.').' ไร่';
+            $parts[] = rtrim(rtrim(number_format($this->areaRai, 2), '0'), '.') . ' ไร่';
         }
 
         if ($this->areaNgan > 0) {
-            $parts[] = rtrim(rtrim(number_format($this->areaNgan, 2), '0'), '.').' งาน';
+            $parts[] = rtrim(rtrim(number_format($this->areaNgan, 2), '0'), '.') . ' งาน';
         }
 
         if ($this->areaWah > 0) {
-            $parts[] = rtrim(rtrim(number_format($this->areaWah, 2), '0'), '.').' ตร.วา';
+            $parts[] = rtrim(rtrim(number_format($this->areaWah, 2), '0'), '.') . ' ตร.วา';
         }
 
         return $parts === [] ? null : implode(' ', $parts);
@@ -162,6 +203,79 @@ readonly class PropertyDetailData
     public function formattedAddress(): ?string
     {
         return $this->toPropertyData()->formattedAddress();
+    }
+
+    public function hasMapCoordinates(): bool
+    {
+        if ($this->latitude === null || $this->longitude === null) {
+            return false;
+        }
+
+        if (abs($this->latitude) > 90 || abs($this->longitude) > 180) {
+            return false;
+        }
+
+        return $this->latitude != 0.0 || $this->longitude != 0.0;
+    }
+
+    public function googleMapsUrl(): string
+    {
+        return 'https://www.google.com/maps?q='.$this->latitude.','.$this->longitude;
+    }
+
+    public function googleMapsDirectionsUrl(): string
+    {
+        return 'https://www.google.com/maps/dir/?api=1&destination='.$this->latitude.','.$this->longitude;
+    }
+
+    public function youtubeEmbedUrl(): ?string
+    {
+        if (blank($this->youtubeLink)) {
+            return null;
+        }
+
+        $videoId = self::extractYoutubeVideoId($this->youtubeLink);
+
+        return $videoId ? 'https://www.youtube.com/embed/'.$videoId : null;
+    }
+
+    private static function extractYoutubeVideoId(string $url): ?string
+    {
+        $url = trim($url);
+
+        if (preg_match('/^(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/', $url, $matches)) {
+            return $matches[1];
+        }
+
+        if (preg_match('/^[a-zA-Z0-9_-]{11}$/', $url)) {
+            return $url;
+        }
+
+        return null;
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    private static function parseCoordinate(array $data, string $key): ?float
+    {
+        $aliases = $key === 'latitude'
+            ? ['latitude', 'lat']
+            : ['longitude', 'lng', 'lon', 'long'];
+
+        foreach ($aliases as $alias) {
+            if (! array_key_exists($alias, $data) || $data[$alias] === null || $data[$alias] === '') {
+                continue;
+            }
+
+            $value = (float) $data[$alias];
+
+            if ($value != 0.0) {
+                return $value;
+            }
+        }
+
+        return null;
     }
 
     /**
