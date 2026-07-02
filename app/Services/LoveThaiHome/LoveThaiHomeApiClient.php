@@ -3,6 +3,8 @@
 namespace App\Services\LoveThaiHome;
 
 use App\Contracts\LoveThaiHomeApiClientInterface;
+use App\Data\LoveThaiHome\ArticleDetailData;
+use App\Data\LoveThaiHome\ArticlesPaginatedResponse;
 use App\Data\LoveThaiHome\CustomerAssetData;
 use App\Data\LoveThaiHome\PaginatedResponse;
 use App\Data\LoveThaiHome\PropertyDetailData;
@@ -113,6 +115,31 @@ class LoveThaiHomeApiClient implements LoveThaiHomeApiClientInterface
         }
 
         return $this->post('customer-assets', $payload);
+    }
+
+    public function articles(array $filters = []): ArticlesPaginatedResponse
+    {
+        $query = array_filter([
+            'category_id' => $filters['category_id'] ?? null,
+            'page' => $filters['page'] ?? 1,
+            'per_page' => min(max((int) ($filters['per_page'] ?? 20), 1), 100),
+        ], fn ($value) => $value !== null && $value !== '');
+
+        return ArticlesPaginatedResponse::fromArray(
+            $this->get('articles', $query)
+        );
+    }
+
+    public function article(string $id): ArticleDetailData
+    {
+        $payload = $this->get('articles/'.urlencode($id));
+        $data = $payload['data'] ?? $payload;
+
+        if (! is_array($data) || ! isset($data['id'])) {
+            throw new LoveThaiHomeApiException('Article not found.', statusCode: 404);
+        }
+
+        return ArticleDetailData::fromArray($data);
     }
 
     /**

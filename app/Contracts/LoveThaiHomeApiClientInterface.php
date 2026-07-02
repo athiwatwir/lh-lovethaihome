@@ -2,6 +2,8 @@
 
 namespace App\Contracts;
 
+use App\Data\LoveThaiHome\ArticleDetailData;
+use App\Data\LoveThaiHome\ArticlesPaginatedResponse;
 use App\Data\LoveThaiHome\CustomerAssetData;
 use App\Data\LoveThaiHome\PaginatedResponse;
 use App\Data\LoveThaiHome\PropertyDetailData;
@@ -69,4 +71,15 @@ interface LoveThaiHomeApiClientInterface
      * @return array<string, mixed>
      */
     public function createCustomerAsset(array|CustomerAssetData $payload): array;
+
+    /**
+     * @param  array{
+     *     category_id?: string|null,
+     *     page?: int,
+     *     per_page?: int,
+     * }  $filters
+     */
+    public function articles(array $filters = []): ArticlesPaginatedResponse;
+
+    public function article(string $id): ArticleDetailData;
 }

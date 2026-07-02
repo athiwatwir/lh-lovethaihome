@@ -69,13 +69,7 @@
                             <span class="relative text-[11px] font-bold leading-tight sm:text-sm">ต้องการฝากขายบ้าน</span>
                         </a>
                     </div>
-                    <a
-                        href="https://m.me/lovethaihome1"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="group mt-3 flex items-center justify-center gap-3 rounded-xl border border-blue-100/80 bg-white/70 px-3 py-2.5 shadow-sm backdrop-blur-sm transition hover:-translate-y-0.5 hover:border-[#0084FF]/40 hover:bg-white hover:shadow-md sm:justify-start"
-                        aria-label="ทักแชท Facebook Messenger ปรึกษาฟรี"
-                    >
+                    <a href="https://m.me/lovethaihome1" target="_blank" rel="noopener noreferrer" class="group mt-3 flex items-center justify-center gap-3 rounded-xl border border-blue-100/80 bg-white/70 px-3 py-2.5 shadow-sm backdrop-blur-sm transition hover:-translate-y-0.5 hover:border-[#0084FF]/40 hover:bg-white hover:shadow-md sm:justify-start" aria-label="ทักแชท Facebook Messenger ปรึกษาฟรี">
                         <span class="relative flex h-10 w-10 shrink-0 items-center justify-center">
                             <span class="absolute inset-0 rounded-full bg-[#0084FF]/25 animate-messenger-glow" aria-hidden="true"></span>
                             <span class="relative flex h-10 w-10 animate-cta-wiggle items-center justify-center rounded-full bg-[#0084FF] text-white shadow-md shadow-[#0084FF]/30 ring-2 ring-[#0084FF]/20 transition group-hover:bg-[#0078e7] group-hover:shadow-lg">
@@ -229,6 +223,42 @@
                 </div>
 
                 <x-consignment-benefits-list />
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-10">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+                <a href="{{ route('articles.category', config('lovethaihome_articles.knowledge_category_id')) }}" class="group relative block overflow-hidden">
+                    <x-lazy-image :src="asset('images/cover/lovethaihome-cover-knowledge.webp')" alt="ความรู้ด้านอสังหาริมทรัพย์" :eager="true" class="w-full object-cover transition duration-300 group-hover:scale-105" />
+                    <span class="pointer-events-none absolute inset-0 flex items-center justify-center" aria-hidden="true">
+                        <span class="flex h-12 w-12 items-center justify-center rounded-full border border-white/80 bg-black/15 text-white shadow-sm backdrop-blur-[2px] transition duration-300 group-hover:scale-110 group-hover:bg-black/25 sm:h-14 sm:w-14">
+                            <svg class="ml-0.5 h-5 w-5 sm:h-6 sm:w-6" fill="none" stroke="currentColor" stroke-width="1.25" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 5.5v13l11-6.5z" />
+                            </svg>
+                        </span>
+                    </span>
+                </a>
+            </div>
+            <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+                <a href="{{ route('articles.category', config('lovethaihome_articles.job_category_id')) }}" class="group relative block overflow-hidden">
+                    <x-lazy-image :src="asset('images/cover/lovethaihome-cover-job.webp')" alt="ความรู้ด้านอสังหาริมทรัพย์" :eager="true" class="w-full object-cover transition duration-300 group-hover:scale-105" />
+                    <span class="pointer-events-none absolute inset-0 flex items-center justify-center" aria-hidden="true">
+                        <span class="flex h-12 w-12 items-center justify-center rounded-full border border-white/80 bg-black/15 text-white shadow-sm backdrop-blur-[2px] transition duration-300 group-hover:scale-110 group-hover:bg-black/25 sm:h-14 sm:w-14">
+                            <svg class="ml-0.5 h-5 w-5 sm:h-6 sm:w-6" fill="none" stroke="currentColor" stroke-width="1.25" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 5.5v13l11-6.5z" />
+                            </svg>
+                        </span>
+                    </span>
+                </a>
+            </div>
+            <div class="flex h-full flex-col justify-center gap-5 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
+                <div class="text-center">
+                    <p class="text-xs font-semibold uppercase tracking-wide text-blue-600">ติดตามเรา</p>
+                    <h3 class="mt-1 text-lg font-bold leading-snug text-blue-900 sm:text-xl">รับข่าวสารผ่านโซเชียลมีเดีย</h3>
+                </div>
+                <x-social-follow-links />
             </div>
         </div>
     </div>

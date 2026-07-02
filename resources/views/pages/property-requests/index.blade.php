@@ -128,7 +128,7 @@
                     </section>
 
                     {{-- ที่อยู่ทรัพย์ --}}
-                    <section class="border-t border-gray-100 pt-6">
+                    <section class="border-t border-gray-100 pt-6" style="display: none;">
                         <h2 class="heading-font text-lg font-bold text-blue-900">ที่อยู่ทรัพย์</h2>
 
                         <div class="mt-4 space-y-4">

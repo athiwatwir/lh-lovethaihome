@@ -4,6 +4,8 @@ namespace App\Services\LoveThaiHome;
 
 use App\Contracts\LoveThaiHomeApiClientInterface;
 use App\Data\LoveThaiHome\AgentData;
+use App\Data\LoveThaiHome\ArticleDetailData;
+use App\Data\LoveThaiHome\ArticlesPaginatedResponse;
 use App\Data\LoveThaiHome\CustomerAssetData;
 use App\Data\LoveThaiHome\PaginatedResponse;
 use App\Data\LoveThaiHome\PropertyDetailData;
@@ -27,7 +29,7 @@ class LoveThaiHomeService
         return Cache::remember(
             'lovethaihome.api.property-types',
             config('lovethaihome_api.cache_ttl'),
-            fn () => collect($this->client->propertyTypes()),
+            fn() => collect($this->client->propertyTypes()),
         );
     }
 
@@ -95,7 +97,7 @@ class LoveThaiHomeService
                     ]);
 
                     return collect(config('lovethaihome_zones'))
-                        ->map(fn (array $zone) => ZoneData::fromArray($zone));
+                        ->map(fn(array $zone) => ZoneData::fromArray($zone));
                 }
             },
         );
@@ -107,7 +109,7 @@ class LoveThaiHomeService
             return null;
         }
 
-        $seller = $this->sellers()->first(fn (array $item) => ($item['id'] ?? null) === $agentId);
+        $seller = $this->sellers()->first(fn(array $item) => ($item['id'] ?? null) === $agentId);
 
         return $seller ? AgentData::fromArray($seller) : null;
     }
@@ -120,7 +122,7 @@ class LoveThaiHomeService
         return Cache::remember(
             'lovethaihome.api.agents',
             config('lovethaihome_api.cache_ttl'),
-            fn () => collect($this->client->agents()),
+            fn() => collect($this->client->agents()),
         );
     }
 
@@ -132,7 +134,7 @@ class LoveThaiHomeService
         return Cache::remember(
             'lovethaihome.api.sellers',
             config('lovethaihome_api.cache_ttl'),
-            fn () => collect($this->client->sellers()),
+            fn() => collect($this->client->sellers()),
         );
     }
 
@@ -143,5 +145,23 @@ class LoveThaiHomeService
     public function submitCustomerAsset(array|CustomerAssetData $payload): array
     {
         return $this->client->createCustomerAsset($payload);
+    }
+
+    /**
+     * @param  array{
+     *     category_id?: string|null,
+     *     page?: int,
+     *     per_page?: int,
+     * }  $filters
+     */
+    public function articles(array $filters = []): ArticlesPaginatedResponse
+    {
+        //dd($filters);
+        return $this->client->articles($filters);
+    }
+
+    public function article(string $id): ArticleDetailData
+    {
+        return $this->client->article($id);
     }
 }

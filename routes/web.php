@@ -9,6 +9,7 @@ use App\Http\Controllers\CareerController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\ThaiAddressController;
+use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\AssetsController;
 use Illuminate\Support\Facades\Route;
 
@@ -41,6 +42,14 @@ Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap')
 
 
 Route::get('/assets/view/{id}', [AssetsController::class, 'view'])->name('assets.view');
+
+Route::get('/articles', [ArticleController::class, 'index'])->name('articles.index');
+Route::get('/articles/category/{categoryId}', [ArticleController::class, 'index'])
+    ->whereUuid('categoryId')
+    ->name('articles.category');
+Route::get('/articles/{article}', [ArticleController::class, 'show'])
+    ->whereUuid('article')
+    ->name('articles.show');
 
 
 Route::prefix('api/thai-addresses')->name('api.thai-addresses.')->group(function () {

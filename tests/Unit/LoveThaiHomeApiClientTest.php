@@ -172,4 +172,86 @@ class LoveThaiHomeApiClientTest extends TestCase
             return ! array_key_exists('price_max', $query);
         });
     }
+
+    public function test_it_fetches_articles_by_category(): void
+    {
+        Http::fake([
+            'https://api.example.com/v1/articles*' => Http::response([
+                'data' => [
+                    [
+                        'id' => 'e624a0bc-1885-4769-9245-c9b4d6713f1a',
+                        'name' => 'วิธีการคำนวณค่าใช้จ่ายในการโอนของกรมที่ดิน',
+                        'category' => [
+                            'id' => '94d5c9bc-a988-44d6-91ab-e744dbe2a716',
+                            'name' => 'สาระน่ารู้และบทความ',
+                        ],
+                        'cover_image_url' => null,
+                        'seq' => 1,
+                        'is_global' => true,
+                        'created_at' => '2024-11-28T14:35:25+00:00',
+                        'updated_at' => '2024-11-28T14:35:25+00:00',
+                    ],
+                ],
+                'meta' => ['current_page' => 1, 'total' => 1],
+                'categories' => [
+                    [
+                        'id' => '94d5c9bc-a988-44d6-91ab-e744dbe2a716',
+                        'name' => 'สาระน่ารู้และบทความ',
+                        'seq' => 10,
+                    ],
+                    [
+                        'id' => '019f225f-1010-705c-bb7e-5ef3716329c1',
+                        'name' => 'รับสมัครงาน',
+                        'seq' => 40,
+                    ],
+                ],
+            ]),
+        ]);
+
+        $client = new LoveThaiHomeApiClient;
+        $response = $client->articles([
+            'category_id' => '94d5c9bc-a988-44d6-91ab-e744dbe2a716',
+            'page' => 1,
+        ]);
+
+        $this->assertCount(1, $response->data);
+        $this->assertSame(1, $response->meta['total']);
+        $this->assertCount(2, $response->categories);
+        $this->assertSame('รับสมัครงาน', $response->categories[1]->name);
+
+        Http::assertSent(function ($request) {
+            $query = $request->data();
+
+            return str_contains($request->url(), '/articles')
+                && ($query['category_id'] ?? null) === '94d5c9bc-a988-44d6-91ab-e744dbe2a716';
+        });
+    }
+
+    public function test_it_fetches_article_detail(): void
+    {
+        Http::fake([
+            'https://api.example.com/v1/articles/e624a0bc-1885-4769-9245-c9b4d6713f1a' => Http::response([
+                'data' => [
+                    'id' => 'e624a0bc-1885-4769-9245-c9b4d6713f1a',
+                    'name' => 'วิธีการคำนวณค่าใช้จ่ายในการโอนของกรมที่ดิน',
+                    'text' => '<p>เนื้อหาบทความ</p>',
+                    'category' => [
+                        'id' => '94d5c9bc-a988-44d6-91ab-e744dbe2a716',
+                        'name' => 'สาระน่ารู้และบทความ',
+                    ],
+                    'cover_image_url' => null,
+                    'seq' => 1,
+                    'is_global' => true,
+                    'created_at' => '2024-11-28T14:35:25+00:00',
+                    'updated_at' => '2024-11-28T14:35:25+00:00',
+                ],
+            ]),
+        ]);
+
+        $client = new LoveThaiHomeApiClient;
+        $article = $client->article('e624a0bc-1885-4769-9245-c9b4d6713f1a');
+
+        $this->assertSame('วิธีการคำนวณค่าใช้จ่ายในการโอนของกรมที่ดิน', $article->name);
+        $this->assertStringContainsString('เนื้อหาบทความ', $article->renderedText());
+    }
 }
