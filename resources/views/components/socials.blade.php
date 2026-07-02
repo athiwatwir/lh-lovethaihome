@@ -68,13 +68,9 @@ $socialLinks = [
         shareUrl: window.location.href,
         shareTitle: document.title,
         canNativeShare: typeof navigator !== 'undefined' && typeof navigator.share === 'function',
-        init() {
-            this.open = localStorage.getItem('socials-closed') !== '1';
-        },
         close() {
             this.open = false;
             this.shareOpen = false;
-            localStorage.setItem('socials-closed', '1');
         },
         toggleShare() {
             this.shareOpen = ! this.shareOpen;

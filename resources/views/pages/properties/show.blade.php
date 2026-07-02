@@ -2,6 +2,11 @@
 
 @php
 $gallery = $property->galleryImages();
+$breadcrumbItems = \App\Support\PropertySeo::breadcrumbItems($property);
+$listQuery = array_filter([
+    'zone_id' => 'all',
+    'asset_type_id' => $property->assetType['id'] ?? null,
+]);
 @endphp
 
 @push('head')
@@ -9,26 +14,20 @@ $gallery = $property->galleryImages();
 @if (! empty($gallery[0]))
 <link rel="preload" as="image" href="{{ $gallery[0] }}">
 @endif
+<script type="application/ld+json">
+{!! json_encode([
+    '@context' => 'https://schema.org',
+    '@type' => 'BreadcrumbList',
+    'itemListElement' => $breadcrumbItems,
+], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) !!}
+</script>
 @endpush
 
 @section('content')
 <div class="bg-gray-50 antialiased" x-data="{
-        activeImage: @js($gallery[0]),
         viewRecorded: false,
         init() {
             setTimeout(() => this.recordView(), 3000);
-        },
-        selectImage(image) {
-            this.activeImage = image;
-        },
-        preloadImage(image) {
-            if (! image) {
-                return;
-            }
-
-            const loader = new Image();
-            loader.decoding = 'async';
-            loader.src = image;
         },
         recordView() {
             if (this.viewRecorded) {
@@ -50,12 +49,18 @@ $gallery = $property->galleryImages();
     }">
     <section class="border-b border-gray-200 bg-white">
         <div class="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
-            <nav class="text-xs text-gray-500 md:text-sm">
-                <a href="{{ route('home') }}" class="hover:text-blue-700">หน้าหลัก</a>
-                <span class="mx-2">/</span>
-                <a href="{{ route('properties.index', ['asset_type_id' => $property->assetType['id'] ?? null]) }}" class="hover:text-blue-700">รายการทรัพย์</a>
-                <span class="mx-2">/</span>
-                <span class="text-gray-800">#{{ $property->code }}</span>
+            <nav class="text-xs text-gray-500 md:text-sm" aria-label="breadcrumb">
+                <ol class="flex flex-wrap items-center">
+                    <li>
+                        <a href="{{ route('home') }}" class="hover:text-blue-700">หน้าหลัก</a>
+                    </li>
+                    <li class="mx-2" aria-hidden="true">/</li>
+                    <li>
+                        <a href="{{ route('properties.index', $listQuery) }}" class="hover:text-blue-700">รายการทรัพย์</a>
+                    </li>
+                    <li class="mx-2" aria-hidden="true">/</li>
+                    <li class="text-gray-800" aria-current="page">#{{ $property->code }}</li>
+                </ol>
             </nav>
         </div>
     </section>
@@ -81,41 +86,23 @@ $gallery = $property->galleryImages();
         <div class="flex flex-col gap-8 lg:flex-row">
             {{-- Left 70% --}}
             <div class="w-full min-w-0 lg:w-[70%] lg:shrink-0">
-                {{-- Gallery --}}
-                <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
-                    <div class="flex aspect-[16/10] items-center justify-center bg-gray-100">
-                        <img :src="activeImage" alt="{{ $property->name }}" class="max-h-full max-w-full object-contain" loading="eager" decoding="async" fetchpriority="high">
-                    </div>
-                    @if (count($gallery) > 1)
-                    <div class="flex gap-2 overflow-x-auto p-3">
-                        @foreach ($gallery as $image)
-                        <button type="button" @click="selectImage(@js($image))" @mouseenter="preloadImage(@js($image))" @focus="preloadImage(@js($image))" :class="activeImage === @js($image) ? 'ring-2 ring-blue-600' : 'ring-1 ring-gray-200'" class="flex h-20 w-28 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-gray-100">
-                            <img src="{{ $image }}" alt="" class="max-h-full max-w-full object-contain" loading="{{ $loop->first ? 'eager' : 'lazy' }}" decoding="async">
-                        </button>
-                        @endforeach
-                    </div>
-                    @endif
-                </div>
-
                 @if ($youtubeEmbedUrl = $property->youtubeEmbedUrl())
-                <div class="mt-3 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm md:mt-6">
+                <div class="mt-3 overflow-hidden rounded-2xl border border-gray-200 mb-3 bg-white shadow-sm md:mt-6">
                     <div class="border-b border-gray-100 px-3 py-3 md:px-4">
                         <h2 class="heading-font text-base font-bold text-blue-900 sm:text-lg">วิดีโอแนะนำทรัพย์</h2>
                     </div>
                     <div class="bg-black">
                         <div class="relative aspect-video w-full">
-                            <iframe
-                                class="absolute inset-0 h-full w-full border-0"
-                                src="{{ $youtubeEmbedUrl }}"
-                                title="วิดีโอ {{ $property->name }}"
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                                referrerpolicy="strict-origin-when-cross-origin"
-                                allowfullscreen
-                                loading="lazy"></iframe>
+                            <iframe class="absolute inset-0 h-full w-full border-0" src="{{ $youtubeEmbedUrl }}" title="วิดีโอ {{ $property->name }}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen loading="lazy"></iframe>
                         </div>
                     </div>
                 </div>
                 @endif
+
+                {{-- Gallery --}}
+                <x-property-gallery :images="$gallery" :alt="$property->name" />
+
+
 
                 {{-- Main info --}}
                 <div class="mt-3 md:mt-6 rounded-xl border border-gray-200 bg-white p-2 md:p-4 shadow-sm">
@@ -160,10 +147,10 @@ $gallery = $property->galleryImages();
 
 
                     <div class="mt-6 border-t border-gray-100 pt-6">
-                        <h2 class="text-xs font-semibold text-gray-500 sm:text-sm">รหัสทรัพย์ #{{ $property->code }}</h2>
+                        <p class="text-xs font-semibold text-gray-500 sm:text-sm">รหัสทรัพย์ #{{ $property->code }}</p>
                         <h2 class="heading-font text-base font-bold text-blue-900 sm:text-lg">รายละเอียดเพิ่มเติม</h2>
                         @if ($property->description)
-                        <div class="prose prose-sm md:prose-base prose-blue mt-3 max-w-none min-w-0 break-words text-sm text-gray-700 md:text-base [&_a]:break-all [&_a]:whitespace-normal [&_a]:text-blue-700 [&_a]:underline [&_h1]:text-lg [&_h2]:text-base [&_h3]:text-sm md:[&_h1]:text-xl md:[&_h2]:text-lg md:[&_h3]:text-base [&_img]:my-3 [&_img]:max-w-full [&_img]:rounded-lg [&_li]:text-sm md:[&_li]:text-base [&_p]:text-sm md:[&_p]:text-base">
+                        <div class="prose prose-sm md:prose-base prose-blue mt-3 max-w-none min-w-0 break-words text-sm text-gray-700 md:text-base [&_a]:break-all [&_a]:whitespace-normal [&_a]:text-blue-700 [&_a]:underline [&_img]:my-3 [&_img]:max-w-full [&_img]:rounded-lg [&_li]:text-sm md:[&_li]:text-base [&_p]:text-sm md:[&_p]:text-base">
                             {!! $property->renderedDescription() !!}
                         </div>
                         @else

@@ -16,13 +16,14 @@ $typeFilterBaseQuery = array_filter([
     'zone_id' => $zoneId,
 ]);
 $zonePickerQuery = array_filter([
-'user_id' => $currentUser?->id,
-'asset_type_id' => $currentType?->id,
+    'user_id' => $currentUser?->id,
+    'asset_type_id' => $currentType?->id,
 ]);
-$showZoneModal = ! $zoneId;
+$showZoneModal = ! $zoneId && ! ($isSearch ?? false);
+$canShowResults = ($isSearch ?? false) || $zoneId;
 @endphp
 
-<div class="bg-gray-50 antialiased" x-data="{ zoneModalOpen: @js($showZoneModal) }" @if ($zoneId) @keydown.escape.window="zoneModalOpen = false" @endif>
+<div class="bg-gray-50 antialiased" x-data="{ zoneModalOpen: @js($showZoneModal) }" @if ($zoneId && ! ($isSearch ?? false)) @keydown.escape.window="zoneModalOpen = false" @endif>
     {{-- Zone selection modal --}}
     <div x-show="zoneModalOpen" x-cloak class="fixed inset-0 z-[100] flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="zone-modal-title">
         <div class="absolute inset-0 bg-blue-950/60 backdrop-blur-sm" aria-hidden="true" @if ($zoneId) @click="zoneModalOpen = false" @endif></div>
@@ -87,7 +88,9 @@ $showZoneModal = ! $zoneId;
             <div class="flex flex-wrap items-start justify-between gap-4">
                 <div>
                     <h1 class="heading-font text-2xl font-bold md:text-3xl">
-                        @if ($currentUser)
+                        @if ($isSearch ?? false)
+                        ผลการค้นหาทรัพย์สิน
+                        @elseif ($currentUser)
                         ทรัพย์ของ {{ $currentUser->fullName() }}
                         @elseif ($currentType)
                         {{ $currentType->name }}
@@ -96,7 +99,15 @@ $showZoneModal = ! $zoneId;
                         @endif
                     </h1>
 
-                    @if ($currentZone)
+                    @if ($isSearch ?? false)
+                    <p class="mt-2 text-blue-100">
+                        @if (! empty($searchQuery['text']))
+                        คำค้นหา: {{ $searchQuery['text'] }}
+                        @else
+                        ค้นหาตามเงื่อนไขที่เลือก
+                        @endif
+                    </p>
+                    @elseif ($currentZone)
                     <p class="mt-2 text-blue-100">
                         โซน: {{ $currentZone['name'] }}
                     </p>
@@ -116,6 +127,11 @@ $showZoneModal = ! $zoneId;
     </section>
 
     <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        @if ($isSearch ?? false)
+        <div class="mb-8 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm md:p-6">
+            <x-property-search-form :propertyTypes="$propertyTypes" />
+        </div>
+        @else
         {{-- Current zone selector --}}
         <div class="mb-6">
             <button type="button" @click="zoneModalOpen = true" @class([ 'inline-flex w-full items-center justify-between gap-3 rounded-xl border-2 px-4 py-3 text-left text-sm font-semibold shadow-sm transition hover:shadow-md sm:w-auto' , $currentZone ? $currentZone['button_class'] : 'border-dashed border-gray-300 bg-white text-gray-700 hover:border-blue-400 hover:text-blue-700' , ])>
@@ -185,8 +201,9 @@ $showZoneModal = ! $zoneId;
             @endforeach
         </div>
         @endif
+        @endif
 
-        @if (! $zoneId)
+        @if (! $canShowResults)
         <div class="rounded-2xl border border-dashed border-gray-300 bg-white px-6 py-12 text-center">
             <p class="text-lg font-medium text-gray-700">กรุณาเลือกโซนเพื่อดูรายการทรัพย์สิน</p>
         </div>
@@ -199,21 +216,45 @@ $showZoneModal = ! $zoneId;
             <svg class="mx-auto h-12 w-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
             </svg>
-            <p class="mt-4 text-lg font-medium text-gray-700">ไม่พบทรัพย์สินในหมวดนี้</p>
+            <p class="mt-4 text-lg font-medium text-gray-700">ไม่พบทรัพย์สินตามเงื่อนไขที่ค้นหา</p>
             <a href="{{ route('home') }}" class="mt-4 inline-block text-blue-700 hover:underline">กลับหน้าหลัก</a>
         </div>
         @else
-        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            @foreach ($properties as $property)
-            <x-property-card :property="$property" :image-index="$loop->index" />
-            @endforeach
-        </div>
+        <div
+            x-data="propertyProgressiveReveal({ batchSize: 4 })"
+            x-cloak
+        >
+            <div x-ref="grid" id="properties-grid" class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                @foreach ($properties as $property)
+                <div
+                    data-property-card
+                    x-show="isVisible({{ $loop->index }})"
+                    x-transition:enter="transition ease-out duration-300"
+                    x-transition:enter-start="opacity-0 translate-y-4"
+                    x-transition:enter-end="opacity-100 translate-y-0"
+                >
+                    <x-property-card :property="$property" :image-index="$loop->index" />
+                </div>
+                @endforeach
+            </div>
 
-        @if ($paginator && $paginator->hasPages())
-        <div class="mt-10">
-            {{ $paginator->onEachSide(1)->links() }}
+            <div
+                x-show="loading && visibleCount < total"
+                class="mt-8 flex items-center justify-center gap-3 text-sm text-gray-500"
+            >
+                <svg class="h-5 w-5 animate-spin text-blue-600" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                กำลังแสดงทรัพย์เพิ่ม...
+            </div>
+
+            @if ($paginator && $paginator->hasPages())
+            <div class="mt-10">
+                {{ $paginator->onEachSide(1)->links() }}
+            </div>
+            @endif
         </div>
-        @endif
         @endif
     </div>
 </div>

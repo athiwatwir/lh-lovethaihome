@@ -43,6 +43,31 @@ class LoveThaiHomeApiClient implements LoveThaiHomeApiClientInterface
         );
     }
 
+    public function searchProperties(array $filters = []): PaginatedResponse
+    {
+        $priceMax = $filters['price_max'] ?? null;
+
+        if ($priceMax === 'unlimited') {
+            $priceMax = null;
+        }
+
+        $query = array_filter([
+            'text' => $filters['text'] ?? null,
+            'asset_type_id' => $filters['asset_type_id'] ?? null,
+            'province' => $filters['province'] ?? null,
+            'district' => $filters['district'] ?? null,
+            'amphur' => $filters['amphur'] ?? null,
+            'price_min' => $filters['price_min'] ?? null,
+            'price_max' => $priceMax,
+            'page' => $filters['page'] ?? 1,
+            'per_page' => min(max((int) ($filters['per_page'] ?? 30), 1), 100),
+        ], fn ($value) => $value !== null && $value !== '');
+
+        return PaginatedResponse::fromArray(
+            $this->get('properties/search', $query)
+        );
+    }
+
     public function property(string $id): PropertyDetailData
     {
         $payload = $this->get('properties/'.urlencode($id));

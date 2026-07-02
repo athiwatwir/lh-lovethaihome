@@ -4,9 +4,8 @@
 ])
 
 @php
-    $eagerImageCount = 4;
-    $loadEager = $imageIndex === null || $imageIndex < $eagerImageCount;
-    $highPriority = $imageIndex === 0;
+    $loadEager = false;
+    $highPriority = false;
 @endphp
 
 <article class="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-lg">
@@ -17,13 +16,12 @@
 
     <div class="pointer-events-none relative z-10 flex flex-1 flex-col">
         <div class="relative aspect-[4/3] overflow-hidden bg-gray-100">
-            <img
-                src="{{ $property->thumbnailOrPlaceholder() }}"
-                alt="{{ $property->name }}"
-                class="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                loading="{{ $loadEager ? 'eager' : 'lazy' }}"
-                decoding="async"
-                @if ($highPriority) fetchpriority="high" @endif>
+            <x-lazy-image
+                :src="$property->thumbnailOrPlaceholder()"
+                :alt="$property->name"
+                :eager="$loadEager"
+                :high-priority="$highPriority"
+                class="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
 
             <div class="absolute left-3 top-3 flex flex-wrap gap-1.5">
                 @if ($property->isRecommend)

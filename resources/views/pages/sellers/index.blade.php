@@ -67,7 +67,13 @@
             <template x-for="seller in filteredSellers" :key="seller.id">
                 <article class="flex h-full flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition hover:border-blue-200 hover:shadow-md">
                     <div class="aspect-[1/1] w-full overflow-hidden bg-gray-100">
-                        <img :src="seller.profileImageUrl" :alt="seller.name" class="h-full w-full object-cover" loading="lazy" decoding="async">
+                        <img
+                            :src="'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 4 3\'%3E%3Crect fill=\'%23f3f4f6\' width=\'4\' height=\'3\'/%3E%3C/svg%3E'"
+                            :data-lazy-src="seller.profileImageUrl"
+                            :alt="seller.name"
+                            class="h-full w-full object-cover"
+                            loading="lazy"
+                            decoding="async">
                     </div>
                     <div class="px-5 pt-4 pb-2 text-center">
                         <h2 class="heading-font text-lg font-bold text-gray-900" x-text="seller.name"></h2>

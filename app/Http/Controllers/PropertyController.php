@@ -6,6 +6,7 @@ use App\Data\LoveThaiHome\AgentData;
 use App\Data\LoveThaiHome\PropertyData;
 use App\Data\LoveThaiHome\PropertyDetailData;
 use App\Data\LoveThaiHome\PropertyTypeData;
+use App\Support\PropertySeo;
 use App\Services\LoveThaiHome\Exceptions\LoveThaiHomeApiException;
 use App\Services\LoveThaiHome\LoveThaiHomeService;
 use Illuminate\Http\Request;
@@ -24,14 +25,16 @@ class PropertyController extends Controller
         $agentId = $request->string('agent_id')->toString() ?: null;
         $userId = $request->string('user_id')->toString() ?: null;
         $page = max(1, (int) $request->query('page', 1));
-        $perPage = min(max((int) $request->query('per_page', 30), 1), 100);
+        $perPage = min(max((int) $request->query('per_page', 12), 1), 100);
         $zoneId = $request->string('zone_id')->toString() ?: null;
+        $isSearch = $this->isSearchRequest($request);
+        $searchQuery = $this->searchQueryFromRequest($request);
 
         $propertyTypes = $this->loadPropertyTypes($api);
         $zones = $this->loadZones($api);
         $currentZone = $this->resolveCurrentZone($zoneId, $zones);
         $currentType = $assetTypeId
-            ? $propertyTypes->first(fn(PropertyTypeData $type) => $type->id === $assetTypeId)
+            ? $propertyTypes->first(fn (PropertyTypeData $type) => $type->id === $assetTypeId)
             : null;
 
         $properties = collect();
@@ -39,7 +42,28 @@ class PropertyController extends Controller
         $apiError = null;
 
         try {
-            if ($zoneId) {
+            if ($isSearch) {
+                $response = $api->searchProperties(array_merge($searchQuery, [
+                    'page' => $page,
+                    'per_page' => $perPage,
+                ]));
+
+                $properties = collect($response->data)
+                    ->map(fn (array $item) => PropertyData::fromArray($item));
+
+                $meta = $response->meta ?? [];
+
+                $paginator = new LengthAwarePaginator(
+                    $properties,
+                    (int) ($meta['total'] ?? $properties->count()),
+                    (int) ($meta['per_page'] ?? $perPage),
+                    (int) ($meta['current_page'] ?? $page),
+                    [
+                        'path' => $request->url(),
+                        'query' => $request->query(),
+                    ],
+                );
+            } elseif ($zoneId) {
                 $response = $api->properties([
                     'asset_type_id' => $assetTypeId,
                     'agent_id' => $agentId,
@@ -71,6 +95,7 @@ class PropertyController extends Controller
                 'status' => $exception->statusCode,
                 'asset_type_id' => $assetTypeId,
                 'user_id' => $userId,
+                'search' => $isSearch,
             ]);
 
             $apiError = 'ไม่สามารถโหลดรายการทรัพย์ได้ในขณะนี้ กรุณาลองใหม่อีกครั้ง';
@@ -89,6 +114,8 @@ class PropertyController extends Controller
             'zoneId' => $zoneId,
             'zones' => $zones,
             'currentZone' => $currentZone,
+            'isSearch' => $isSearch,
+            'searchQuery' => $searchQuery,
         ]);
     }
 
@@ -111,6 +138,8 @@ class PropertyController extends Controller
         }
 
         $user = $this->resolveUser($api, $detail);
+
+        PropertySeo::apply($detail);
 
         return view('pages.properties.show', [
             'property' => $detail,
@@ -166,6 +195,52 @@ class PropertyController extends Controller
         }
 
         return null;
+    }
+
+    /**
+     * @return array{
+     *     text?: string,
+     *     asset_type_id?: string,
+     *     province?: string,
+     *     district?: string,
+     *     amphur?: string,
+     *     price_min?: string,
+     *     price_max?: string,
+     * }
+     */
+    private function searchQueryFromRequest(Request $request): array
+    {
+        $text = $request->string('text')->toString()
+            ?: $request->string('q')->toString();
+
+        $priceMax = $request->string('price_max')->toString();
+
+        return array_filter([
+            'text' => $text ?: null,
+            'asset_type_id' => $request->string('asset_type_id')->toString() ?: null,
+            'province' => $request->string('province')->toString() ?: null,
+            'district' => $request->string('district')->toString() ?: null,
+            'amphur' => $request->string('amphur')->toString() ?: null,
+            'price_min' => $request->string('price_min')->toString() ?: null,
+            'price_max' => $priceMax !== '' ? $priceMax : null,
+        ], fn ($value) => $value !== null && $value !== '');
+    }
+
+    private function isSearchRequest(Request $request): bool
+    {
+        if ($request->boolean('search')) {
+            return true;
+        }
+
+        return $request->hasAny([
+            'text',
+            'q',
+            'province',
+            'district',
+            'amphur',
+            'price_min',
+            'price_max',
+        ]);
     }
 
     /**

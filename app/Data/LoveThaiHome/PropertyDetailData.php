@@ -191,7 +191,7 @@ readonly class PropertyDetailData
             return '';
         }
 
-        $allowedTags = '<p><br><br/><strong><b><em><i><u><ul><ol><li><h1><h2><h3><h4><h5><h6><a><img><span><div><table><tr><td><th><tbody><thead><blockquote><hr><figure><figcaption>';
+        $allowedTags = '<p><br><br/><strong><b><em><i><u><ul><ol><li><a><img><span><div><table><tr><td><th><tbody><thead><blockquote><hr><figure><figcaption>';
 
         if (str_contains($this->description, '<')) {
             return strip_tags($this->description, $allowedTags);

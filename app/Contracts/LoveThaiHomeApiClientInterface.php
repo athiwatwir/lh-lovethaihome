@@ -27,6 +27,21 @@ interface LoveThaiHomeApiClientInterface
      */
     public function properties(array $filters = []): PaginatedResponse;
 
+    /**
+     * @param  array{
+     *     text?: string|null,
+     *     asset_type_id?: string|null,
+     *     province?: string|null,
+     *     district?: string|null,
+     *     amphur?: string|null,
+     *     price_min?: string|int|null,
+     *     price_max?: string|int|null,
+     *     page?: int,
+     *     per_page?: int,
+     * }  $filters
+     */
+    public function searchProperties(array $filters = []): PaginatedResponse;
+
     public function property(string $id): PropertyDetailData;
 
     /**

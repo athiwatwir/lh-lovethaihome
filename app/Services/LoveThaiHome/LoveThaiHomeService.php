@@ -46,6 +46,24 @@ class LoveThaiHomeService
         return $this->client->properties($filters);
     }
 
+    /**
+     * @param  array{
+     *     text?: string|null,
+     *     asset_type_id?: string|null,
+     *     province?: string|null,
+     *     district?: string|null,
+     *     amphur?: string|null,
+     *     price_min?: string|int|null,
+     *     price_max?: string|int|null,
+     *     page?: int,
+     *     per_page?: int,
+     * }  $filters
+     */
+    public function searchProperties(array $filters = []): PaginatedResponse
+    {
+        return $this->client->searchProperties($filters);
+    }
+
     public function property(string $id): PropertyDetailData
     {
         return $this->client->property($id);

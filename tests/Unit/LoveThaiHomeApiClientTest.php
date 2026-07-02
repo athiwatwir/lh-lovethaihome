@@ -115,4 +115,61 @@ class LoveThaiHomeApiClientTest extends TestCase
         $this->assertCount(2, $zones);
         $this->assertSame('โซนต่างจังหวัด', $zones[1]->name);
     }
+
+    public function test_it_searches_properties_with_filters(): void
+    {
+        Http::fake([
+            'https://api.example.com/v1/properties/search*' => Http::response([
+                'data' => [['id' => 'property-1', 'code' => '690733']],
+                'meta' => ['current_page' => 1, 'total' => 1, 'per_page' => 12],
+            ]),
+        ]);
+
+        $client = new LoveThaiHomeApiClient;
+        $response = $client->searchProperties([
+            'text' => 'ขายด่วน',
+            'asset_type_id' => '185c82af-6b9a-45b1-b4d7-e8b62253dc6b',
+            'province' => 'กรุงเทพมหานคร',
+            'amphur' => 'บางกะปิ',
+            'district' => 'หัวหมาก',
+            'price_min' => '1000000',
+            'price_max' => '5000000',
+            'page' => 1,
+            'per_page' => 12,
+        ]);
+
+        $this->assertCount(1, $response->data);
+        $this->assertSame(1, $response->meta['total']);
+
+        Http::assertSent(function ($request) {
+            $query = $request->data();
+
+            return str_contains($request->url(), '/properties/search')
+                && ($query['text'] ?? null) === 'ขายด่วน'
+                && ($query['price_min'] ?? null) === '1000000'
+                && ($query['price_max'] ?? null) === '5000000';
+        });
+    }
+
+    public function test_it_omits_unlimited_price_max_from_search_query(): void
+    {
+        Http::fake([
+            'https://api.example.com/v1/properties/search*' => Http::response([
+                'data' => [],
+                'meta' => ['current_page' => 1, 'total' => 0, 'per_page' => 12],
+            ]),
+        ]);
+
+        $client = new LoveThaiHomeApiClient;
+        $client->searchProperties([
+            'text' => 'ขายด่วน',
+            'price_max' => 'unlimited',
+        ]);
+
+        Http::assertSent(function ($request) {
+            $query = $request->data();
+
+            return ! array_key_exists('price_max', $query);
+        });
+    }
 }
