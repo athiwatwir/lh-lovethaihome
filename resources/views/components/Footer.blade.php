@@ -120,14 +120,7 @@ $mobileNavItems = [
             </div>
 
             <div class="hidden md:block">
-                <h4 class="mb-4 font-bold text-blue-900">ติดตามเรา</h4>
-                <div class="mb-6 flex space-x-2">
-                    <div class="h-8 w-8 rounded-full bg-green-500"></div>
-                    <div class="h-8 w-8 rounded-full bg-blue-600"></div>
-                    <div class="h-8 w-8 rounded-full bg-linear-to-tr from-blue-500 to-pink-500"></div>
-                    <div class="h-8 w-8 rounded-full bg-red-600"></div>
-                    <div class="h-8 w-8 rounded-full bg-black"></div>
-                </div>
+
 
                 <div class="rounded-xl border border-blue-100 bg-blue-50 p-4 text-center">
                     <p class="mb-1 text-xs text-gray-600">ผู้เข้าชมเว็บไซต์กว่า</p>
