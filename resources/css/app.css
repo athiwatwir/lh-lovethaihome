@@ -138,3 +138,61 @@ p {
 .animate-messenger-glow {
     animation: messenger-glow 1.8s ease-in-out infinite;
 }
+
+@layer components {
+    .article-content {
+        @apply max-w-none break-words text-sm leading-relaxed text-gray-700 md:text-base;
+    }
+
+    .article-content :where(p) {
+        @apply mb-3;
+    }
+
+    .article-content :where(ul) {
+        @apply my-3 space-y-1 pl-5;
+        list-style-type: disc !important;
+        list-style-position: outside;
+    }
+
+    .article-content :where(ol) {
+        @apply my-3 space-y-1 pl-5;
+        list-style-type: decimal !important;
+        list-style-position: outside;
+    }
+
+    .article-content :where(li) {
+        @apply pl-1;
+    }
+
+    .article-content :where(ul ul, ol ol, ul ol, ol ul) {
+        @apply my-1;
+    }
+
+    .article-content :where(a) {
+        @apply break-all text-blue-700 underline;
+    }
+
+    .article-content :where(strong, b) {
+        @apply font-bold;
+    }
+
+    .article-content :where(em, i) {
+        @apply italic;
+    }
+
+    .article-content :where(s, strike, del) {
+        @apply text-gray-500 line-through;
+    }
+
+    .article-content :where(img) {
+        @apply my-3 max-w-full rounded-lg;
+    }
+
+    .article-content :where(h2) {
+        @apply mb-3 mt-6 text-lg font-bold text-gray-900;
+    }
+
+    .article-content :where(h3) {
+        @apply mb-2 mt-5 text-base font-bold text-gray-900;
+    }
+}

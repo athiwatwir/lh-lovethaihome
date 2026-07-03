@@ -95,23 +95,19 @@ readonly class PropertyData
             $labels[] = 'ขาย';
         }
 
+        /*
+
         if ($this->listing['rent'] ?? false) {
             $labels[] = 'เช่า';
         }
+            */
 
-        if ($this->listing['sale_down'] ?? false) {
-            $labels[] = 'ขายดาวน์';
-        }
-
-        if ($this->listing['sellout'] ?? false) {
-            $labels[] = 'เซลล์เอาท์';
-        }
 
         return $labels;
     }
 
     public function thumbnailOrPlaceholder(): string
     {
-        return $this->thumbnailUrl ?: asset('images/cover/house.webp');
+        return $this->thumbnailUrl ?: asset('images/cover/no-image.webp');
     }
 }

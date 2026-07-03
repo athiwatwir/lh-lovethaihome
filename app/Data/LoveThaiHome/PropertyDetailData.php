@@ -2,6 +2,8 @@
 
 namespace App\Data\LoveThaiHome;
 
+use App\Support\RichHtml;
+
 readonly class PropertyDetailData
 {
     /**
@@ -187,17 +189,7 @@ readonly class PropertyDetailData
 
     public function renderedDescription(): string
     {
-        if (blank($this->description)) {
-            return '';
-        }
-
-        $allowedTags = '<p><br><br/><strong><b><em><i><u><ul><ol><li><a><img><span><div><table><tr><td><th><tbody><thead><blockquote><hr><figure><figcaption>';
-
-        if (str_contains($this->description, '<')) {
-            return strip_tags($this->description, $allowedTags);
-        }
-
-        return nl2br(e($this->description));
+        return RichHtml::render($this->description);
     }
 
     public function formattedAddress(): ?string

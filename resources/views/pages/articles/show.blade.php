@@ -25,7 +25,9 @@
             <div class="min-w-0">
                 <article class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm md:p-8">
                     @if ($article->renderedText())
-                    {!! $article->renderedText() !!}
+                    <div class="article-content">
+                        {!! $article->renderedText() !!}
+                    </div>
                     @else
                     <p class="text-gray-500">ไม่มีเนื้อหาบทความ</p>
                     @endif

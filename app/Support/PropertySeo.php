@@ -140,6 +140,18 @@ class PropertySeo
     }
 
     /**
+     * @return array<string, mixed>
+     */
+    public static function breadcrumbSchema(PropertyDetailData $property): array
+    {
+        return [
+            '@context' => 'https://schema.org',
+            '@type' => 'BreadcrumbList',
+            'itemListElement' => self::breadcrumbItems($property),
+        ];
+    }
+
+    /**
      * @return list<string>
      */
     public static function images(PropertyDetailData $property): array

@@ -2,7 +2,6 @@
 
 @php
 $gallery = $property->galleryImages();
-$breadcrumbItems = \App\Support\PropertySeo::breadcrumbItems($property);
 $listQuery = array_filter([
     'zone_id' => 'all',
     'asset_type_id' => $property->assetType['id'] ?? null,
@@ -14,13 +13,7 @@ $listQuery = array_filter([
 @if (! empty($gallery[0]))
 <link rel="preload" as="image" href="{{ $gallery[0] }}">
 @endif
-<script type="application/ld+json">
-{!! json_encode([
-    '@context' => 'https://schema.org',
-    '@type' => 'BreadcrumbList',
-    'itemListElement' => $breadcrumbItems,
-], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) !!}
-</script>
+<script type="application/ld+json">@json(\App\Support\PropertySeo::breadcrumbSchema($property), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)</script>
 @endpush
 
 @section('content')
@@ -150,7 +143,7 @@ $listQuery = array_filter([
                         <p class="text-xs font-semibold text-gray-500 sm:text-sm">รหัสทรัพย์ #{{ $property->code }}</p>
                         <h2 class="heading-font text-base font-bold text-blue-900 sm:text-lg">รายละเอียดเพิ่มเติม</h2>
                         @if ($property->description)
-                        <div class="prose prose-sm md:prose-base prose-blue mt-3 max-w-none min-w-0 break-words text-sm text-gray-700 md:text-base [&_a]:break-all [&_a]:whitespace-normal [&_a]:text-blue-700 [&_a]:underline [&_img]:my-3 [&_img]:max-w-full [&_img]:rounded-lg [&_li]:text-sm md:[&_li]:text-base [&_p]:text-sm md:[&_p]:text-base">
+                        <div class="article-content mt-3 min-w-0">
                             {!! $property->renderedDescription() !!}
                         </div>
                         @else
