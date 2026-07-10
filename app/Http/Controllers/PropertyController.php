@@ -24,6 +24,8 @@ class PropertyController extends Controller
         $assetTypeId = $request->string('asset_type_id')->toString() ?: null;
         $agentId = $request->string('agent_id')->toString() ?: null;
         $userId = $request->string('user_id')->toString() ?: null;
+        $tagId = $request->string('tag_id')->toString() ?: null;
+        $tagName = $request->string('tag_name')->toString() ?: null;
         $page = max(1, (int) $request->query('page', 1));
         $perPage = min(max((int) $request->query('per_page', 12), 1), 100);
         $zoneId = $request->string('zone_id')->toString() ?: null;
@@ -34,7 +36,7 @@ class PropertyController extends Controller
         $zones = $this->loadZones($api);
         $currentZone = $this->resolveCurrentZone($zoneId, $zones);
         $currentType = $assetTypeId
-            ? $propertyTypes->first(fn (PropertyTypeData $type) => $type->id === $assetTypeId)
+            ? $propertyTypes->first(fn(PropertyTypeData $type) => $type->id === $assetTypeId)
             : null;
 
         $properties = collect();
@@ -49,7 +51,7 @@ class PropertyController extends Controller
                 ]));
 
                 $properties = collect($response->data)
-                    ->map(fn (array $item) => PropertyData::fromArray($item));
+                    ->map(fn(array $item) => PropertyData::fromArray($item));
 
                 $meta = $response->meta ?? [];
 
@@ -69,12 +71,13 @@ class PropertyController extends Controller
                     'agent_id' => $agentId,
                     'user_id' => $userId,
                     'zone_id' => $zoneId === 'all' ? null : $zoneId,
+                    'tag_id' => $tagId,
                     'page' => $page,
                     'per_page' => $perPage,
                 ]);
 
                 $properties = collect($response->data)
-                    ->map(fn (array $item) => PropertyData::fromArray($item));
+                    ->map(fn(array $item) => PropertyData::fromArray($item));
 
                 $meta = $response->meta ?? [];
 
@@ -102,6 +105,9 @@ class PropertyController extends Controller
         }
 
         $currentUser = $userId ? $api->findAgent($userId) : null;
+        $currentTag = $tagId
+            ? ['id' => $tagId, 'name' => $tagName ?: null]
+            : null;
 
         return view('pages.properties.index', [
             'properties' => $properties,
@@ -116,6 +122,8 @@ class PropertyController extends Controller
             'currentZone' => $currentZone,
             'isSearch' => $isSearch,
             'searchQuery' => $searchQuery,
+            'tagId' => $tagId,
+            'currentTag' => $currentTag,
         ]);
     }
 
@@ -128,6 +136,35 @@ class PropertyController extends Controller
                 'message' => $exception->getMessage(),
                 'status' => $exception->statusCode,
                 'property_id' => $property,
+            ]);
+
+            if ($exception->statusCode === 404) {
+                throw new NotFoundHttpException('ไม่พบทรัพย์สินที่ต้องการ');
+            }
+
+            abort(503, 'ไม่สามารถโหลดข้อมูลทรัพย์ได้ในขณะนี้');
+        }
+
+        $user = $this->resolveUser($api, $detail);
+
+        PropertySeo::apply($detail);
+
+        return view('pages.properties.show', [
+            'property' => $detail,
+            'user' => $user,
+        ]);
+    }
+
+
+    public function showByCode(string $propertyTypeCode, string $propertyCode, LoveThaiHomeService $api): View
+    {
+        try {
+            $detail = $api->property($propertyCode);
+        } catch (LoveThaiHomeApiException $exception) {
+            Log::warning('Failed to load property detail from API.', [
+                'message' => $exception->getMessage(),
+                'status' => $exception->statusCode,
+                'property_code' => $propertyCode,
             ]);
 
             if ($exception->statusCode === 404) {
@@ -191,6 +228,7 @@ class PropertyController extends Controller
                 email: null,
                 lineId: null,
                 profileImageUrl: $detail->agent['profile_image_url'] ?? null,
+                seq: null,
             );
         }
 
@@ -223,7 +261,7 @@ class PropertyController extends Controller
             'amphur' => $request->string('amphur')->toString() ?: null,
             'price_min' => $request->string('price_min')->toString() ?: null,
             'price_max' => $priceMax !== '' ? $priceMax : null,
-        ], fn ($value) => $value !== null && $value !== '');
+        ], fn($value) => $value !== null && $value !== '');
     }
 
     private function isSearchRequest(Request $request): bool
@@ -266,7 +304,7 @@ class PropertyController extends Controller
     private function loadZones(LoveThaiHomeService $api): Collection
     {
         return $api->zones()
-            ->map(fn ($zone) => $this->formatZoneOption($zone->id, $zone->name))
+            ->map(fn($zone) => $this->formatZoneOption($zone->id, $zone->name))
             ->values();
     }
 
@@ -284,7 +322,7 @@ class PropertyController extends Controller
             return $this->formatZoneOption('all', 'ทั้งหมด');
         }
 
-        return $zones->first(fn (array $zone) => $zone['id'] === $zoneId);
+        return $zones->first(fn(array $zone) => $zone['id'] === $zoneId);
     }
 
     /**
@@ -292,8 +330,8 @@ class PropertyController extends Controller
      */
     private function formatZoneOption(string $id, string $name): array
     {
-        $style = config('lovethaihome_zone_styles.zones.'.$id)
-            ?? config('lovethaihome_zone_styles.'.$id)
+        $style = config('lovethaihome_zone_styles.zones.' . $id)
+            ?? config('lovethaihome_zone_styles.' . $id)
             ?? config('lovethaihome_zone_styles.default');
 
         return [

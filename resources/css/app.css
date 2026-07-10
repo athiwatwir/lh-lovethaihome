@@ -145,7 +145,12 @@ p {
     }
 
     .article-content :where(p) {
-        @apply mb-3;
+        @apply mb-0;
+        white-space: pre-line;
+    }
+
+    .article-content :where(p.rich-html-spacer, p:empty) {
+        min-height: 1lh;
     }
 
     .article-content :where(ul) {

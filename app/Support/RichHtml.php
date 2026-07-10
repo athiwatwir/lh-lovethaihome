@@ -21,11 +21,36 @@ class RichHtml
 
         $processed = strip_tags($processed, $allowedTags);
 
+        $processed = self::preserveLineBreaks($processed);
+
         foreach ($embeds as $placeholder => $embed) {
             $processed = str_replace($placeholder, $embed, $processed);
         }
 
         return $processed;
+    }
+
+    private static function preserveLineBreaks(string $html): string
+    {
+        // Rich text editors use empty paragraphs for blank lines.
+        $html = preg_replace(
+            '/<p>(?:\s|&nbsp;|&#0*160;|<br\s*\/?>)*<\/p>/i',
+            '<p class="rich-html-spacer">&nbsp;</p>',
+            $html,
+        ) ?? $html;
+
+        // Literal newlines inside block tags (common when pasted from plain text).
+        $html = preg_replace_callback(
+            '/<(p|li|td|th|figcaption|blockquote)([^>]*)>(.*?)<\/\1>/is',
+            static function (array $matches): string {
+                $inner = preg_replace("/\r\n|\n|\r/", '<br>', $matches[3]) ?? $matches[3];
+
+                return '<'.$matches[1].$matches[2].'>'.$inner.'</'.$matches[1].'>';
+            },
+            $html,
+        ) ?? $html;
+
+        return $html;
     }
 
     /**

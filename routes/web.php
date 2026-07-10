@@ -11,6 +11,7 @@ use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\ThaiAddressController;
 use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\AssetsController;
+use App\Http\Controllers\PageController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -21,6 +22,13 @@ use Illuminate\Support\Facades\Route;
 
 // ── Home ─────────────────────────────────────────────────────────────────────
 Route::get('/', [HomeController::class, 'index'])->name('home');
+
+Route::get('/{propertyTypeCode}/{propertyCode}/{slug}', [PropertyController::class, 'showByCode'])
+    ->where('propertyTypeCode', '[A-Za-z0-9-_]+')
+    ->where('propertyCode', '[A-Za-z0-9-_]+')
+    ->name('pages.properties.showByCode');
+
+
 Route::get('/properties', [PropertyController::class, 'index'])->name('properties.index');
 Route::post('/properties/{property}/views', [PropertyController::class, 'recordView'])
     ->whereUuid('property')

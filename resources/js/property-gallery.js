@@ -22,6 +22,7 @@ document.addEventListener('alpine:init', () => {
         selectImage(index) {
             if (index >= 0 && index < this.images.length) {
                 this.activeIndex = index;
+                this.preloadAdjacent();
             }
         },
 
@@ -95,20 +96,26 @@ document.addEventListener('alpine:init', () => {
         },
 
         onKeydown(event) {
+            if (event.key === 'ArrowRight' && this.hasMultiple) {
+                event.preventDefault();
+                this.next();
+
+                return;
+            }
+
+            if (event.key === 'ArrowLeft' && this.hasMultiple) {
+                event.preventDefault();
+                this.prev();
+
+                return;
+            }
+
             if (! this.lightboxOpen) {
                 return;
             }
 
             if (event.key === 'Escape') {
                 this.closeLightbox();
-            }
-
-            if (event.key === 'ArrowRight') {
-                this.next();
-            }
-
-            if (event.key === 'ArrowLeft') {
-                this.prev();
             }
         },
     }));

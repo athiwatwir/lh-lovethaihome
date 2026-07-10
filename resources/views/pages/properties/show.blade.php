@@ -1,11 +1,14 @@
 @extends('layouts.home')
 
 @php
+use App\Support\PropertySeo;
+
 $gallery = $property->galleryImages();
 $listQuery = array_filter([
-    'zone_id' => 'all',
-    'asset_type_id' => $property->assetType['id'] ?? null,
+'zone_id' => 'all',
+'asset_type_id' => $property->assetType['id'] ?? null,
 ]);
+$breadcrumbSchemaJson = json_encode(PropertySeo::breadcrumbSchema($property), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 @endphp
 
 @push('head')
@@ -13,7 +16,12 @@ $listQuery = array_filter([
 @if (! empty($gallery[0]))
 <link rel="preload" as="image" href="{{ $gallery[0] }}">
 @endif
-<script type="application/ld+json">@json(\App\Support\PropertySeo::breadcrumbSchema($property), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)</script>
+<script type="application/ld+json">
+    {
+        !!$breadcrumbSchemaJson!!
+    }
+
+</script>
 @endpush
 
 @section('content')
@@ -59,21 +67,25 @@ $listQuery = array_filter([
     </section>
 
     <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div class="flex flex-wrap items-start justify-between gap-2 mb-4">
-            <div>
+        <div class="mb-4 space-y-3">
 
-                <h1 class="heading-font mt-1 text-lg font-bold leading-snug text-gray-900 sm:text-xl md:text-2xl">
-                    {{ $property->name }}
-                </h1>
+
+            <div class="flex flex-wrap items-start justify-between gap-2">
+                <div>
+
+                    <h1 class="heading-font mt-1 text-lg font-bold leading-snug text-gray-900 sm:text-xl md:text-2xl">
+                        {{ $property->name }}
+                    </h1>
+                </div>
+                <p class="text-2xl font-bold text-red-700 heading-font sm:text-3xl">
+                    @foreach ($property->priceDisplayLines() as $priceLine)
+                    <span class="block sm:inline">
+                        <span class="border-s border-gray-200 px-2">{{ $priceLine['label'] }}</span>
+                        <span>{{ $priceLine['value'] }}</span>
+                    </span>
+                    @endforeach
+                </p>
             </div>
-            <p class="text-2xl font-bold text-red-700 heading-font sm:text-3xl">
-                @foreach ($property->priceDisplayLines() as $priceLine)
-                <span class="block sm:inline">
-                    <span class="border-s border-gray-200 px-2">{{ $priceLine['label'] }}</span>
-                    <span>{{ $priceLine['value'] }}</span>
-                </span>
-                @endforeach
-            </p>
         </div>
 
         <div class="flex flex-col gap-8 lg:flex-row">
@@ -93,7 +105,9 @@ $listQuery = array_filter([
                 @endif
 
                 {{-- Gallery --}}
+                @if (! empty($gallery))
                 <x-property-gallery :images="$gallery" :alt="$property->name" />
+                @endif
 
 
 
@@ -121,12 +135,7 @@ $listQuery = array_filter([
                             <p class="mt-1 text-sm font-semibold text-gray-900 sm:text-base">{{ $property->bathroom }} ห้อง</p>
                         </div>
                         @endif
-                        @if ($property->pricePerWah)
-                        <div class="rounded-xl bg-gray-50 p-3 sm:p-4">
-                            <p class="text-[11px] text-gray-500 sm:text-xs mb-0">ราคาต่อ ตรว.</p>
-                            <p class="mt-0 text-sm font-semibold text-red-700 sm:text-base">{{ number_format($property->pricePerWah) }} บาท</p>
-                        </div>
-                        @endif
+
 
                     </div>
 
@@ -150,6 +159,19 @@ $listQuery = array_filter([
                         <p class="mt-3 leading-relaxed text-gray-700">-</p>
                         @endif
                     </div>
+
+                    @if (! empty($property->tags))
+                    <div class="rounded-xl border border-blue-100 bg-blue-50/60 p-2 sm:p-3">
+                        <p class="mb-2 text-[11px] font-semibold uppercase tracking-wide text-blue-700 sm:text-xs">แท็กทำเล</p>
+                        <div class="flex flex-wrap gap-2">
+                            @foreach ($property->tags as $tag)
+                            <a href="{{ route('properties.index', ['zone_id' => 'all', 'tag_id' => $tag['id'], 'tag_name' => $tag['name']]) }}" class="inline-flex min-h-8 items-center rounded-full border border-blue-200 bg-white px-3 py-1 text-xs font-semibold text-blue-700 shadow-xs transition hover:-translate-y-0.5 hover:border-blue-300 hover:bg-blue-100 hover:text-blue-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1">
+                                #{{ $tag['name'] }}
+                            </a>
+                            @endforeach
+                        </div>
+                    </div>
+                    @endif
 
                     @if ($property->hasMapCoordinates())
                     <x-property-map :latitude="$property->latitude" :longitude="$property->longitude" :label="$property->name" :google-maps-url="$property->googleMapsUrl()" :google-maps-directions-url="$property->googleMapsDirectionsUrl()" />

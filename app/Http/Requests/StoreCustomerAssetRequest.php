@@ -18,7 +18,7 @@ class StoreCustomerAssetRequest extends FormRequest
     {
         return [
             'asset_type_id' => ['required', 'uuid'],
-            'price_amount' => ['nullable', 'integer', 'min:0'],
+            'price_amount' => ['required', 'integer', 'min:1'],
             'price_per_wah' => ['nullable', 'integer', 'min:0'],
             'description' => ['nullable', 'string', 'max:5000'],
             'isreqconsult' => ['nullable', 'boolean'],
@@ -36,6 +36,8 @@ class StoreCustomerAssetRequest extends FormRequest
             'area_wah' => ['nullable', 'numeric', 'min:0'],
             'bedroom' => ['nullable', 'integer', 'min:0'],
             'bathroom' => ['nullable', 'integer', 'min:0'],
+            'images' => ['nullable', 'array', 'max:10'],
+            'images.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
         ];
     }
 
@@ -63,6 +65,8 @@ class StoreCustomerAssetRequest extends FormRequest
             'area_wah' => 'ตารางวา',
             'bedroom' => 'ห้องนอน',
             'bathroom' => 'ห้องน้ำ',
+            'images' => 'รูปภาพทรัพย์',
+            'images.*' => 'รูปภาพทรัพย์',
         ];
     }
 

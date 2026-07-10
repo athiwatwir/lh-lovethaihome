@@ -12,6 +12,7 @@ readonly class PropertyDetailData
      * @param  array{id: string, firstname?: string, lastname?: string, phone?: string, email?: string, lineid?: string, profile_image_url?: string}|null  $user
      * @param  array{id: string, name: string}|null  $zone
      * @param  array<string, bool>|null  $listing
+     * @param  list<array{id: string, name: string}>  $tags
      * @param  list<string>  $images
      * @param  array<string, mixed>|null  $address
      */
@@ -23,6 +24,7 @@ readonly class PropertyDetailData
         public ?array $agent,
         public ?array $user,
         public ?array $zone,
+        public array $tags,
         public int $priceAmount,
         public ?int $priceRent,
         public ?array $listing,
@@ -58,6 +60,7 @@ readonly class PropertyDetailData
             agent: isset($data['agent']) ? (array) $data['agent'] : null,
             user: isset($data['user']) ? (array) $data['user'] : null,
             zone: isset($data['zone']) ? (array) $data['zone'] : null,
+            tags: self::parseTags($data),
             priceAmount: (int) ($data['price_amount'] ?? 0),
             priceRent: isset($data['price_rent']) ? (int) $data['price_rent'] : null,
             listing: isset($data['listing']) ? (array) $data['listing'] : null,
@@ -118,7 +121,9 @@ readonly class PropertyDetailData
         }
 
         if ($images === []) {
-            return [asset('images/cover/house.webp')];
+            //return [asset('images/cover/house.webp')];
+            //return [asset('images/cover/no-image.webp')];
+            return [];
         }
 
         return $images;
@@ -212,12 +217,12 @@ readonly class PropertyDetailData
 
     public function googleMapsUrl(): string
     {
-        return 'https://www.google.com/maps?q='.$this->latitude.','.$this->longitude;
+        return 'https://www.google.com/maps?q=' . $this->latitude . ',' . $this->longitude;
     }
 
     public function googleMapsDirectionsUrl(): string
     {
-        return 'https://www.google.com/maps/dir/?api=1&destination='.$this->latitude.','.$this->longitude;
+        return 'https://www.google.com/maps/dir/?api=1&destination=' . $this->latitude . ',' . $this->longitude;
     }
 
     public function youtubeEmbedUrl(): ?string
@@ -228,7 +233,7 @@ readonly class PropertyDetailData
 
         $videoId = self::extractYoutubeVideoId($this->youtubeLink);
 
-        return $videoId ? 'https://www.youtube.com/embed/'.$videoId : null;
+        return $videoId ? 'https://www.youtube.com/embed/' . $videoId : null;
     }
 
     private static function extractYoutubeVideoId(string $url): ?string
@@ -293,6 +298,38 @@ readonly class PropertyDetailData
                 }
 
                 return null;
+            })
+            ->filter()
+            ->values()
+            ->all();
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return list<array{id: string, name: string}>
+     */
+    private static function parseTags(array $data): array
+    {
+        $raw = $data['tags'] ?? [];
+
+        if (! is_array($raw)) {
+            return [];
+        }
+
+        return collect($raw)
+            ->filter(fn ($item) => is_array($item))
+            ->map(function (array $item): ?array {
+                $id = isset($item['id']) ? (string) $item['id'] : '';
+                $name = trim((string) ($item['name'] ?? ''));
+
+                if ($id === '' || $name === '') {
+                    return null;
+                }
+
+                return [
+                    'id' => $id,
+                    'name' => $name,
+                ];
             })
             ->filter()
             ->values()

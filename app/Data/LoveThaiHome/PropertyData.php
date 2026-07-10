@@ -5,7 +5,7 @@ namespace App\Data\LoveThaiHome;
 readonly class PropertyData
 {
     /**
-     * @param  array{id: string, name: string}|null  $assetType
+     * @param  array{id: string, name: string, code?: string}|null  $assetType
      * @param  array{id: string, name: string, code?: string}|null  $agent
      * @param  array{id: string, name: string}|null  $zone
      * @param  array<string, bool>|null  $listing
@@ -28,6 +28,7 @@ readonly class PropertyData
         public ?string $createdAt,
         public ?array $address,
         public ?array $seller,
+        public ?string $slug,
     ) {}
 
     /**
@@ -51,6 +52,7 @@ readonly class PropertyData
             createdAt: isset($data['created_at']) ? (string) $data['created_at'] : null,
             address: isset($data['address']) && is_array($data['address']) ? $data['address'] : null,
             seller: isset($data['seller']) && is_array($data['seller']) ? $data['seller'] : null,
+            slug: isset($data['slug']) ? (string) $data['slug'] : null,
         );
     }
 
@@ -60,12 +62,16 @@ readonly class PropertyData
             return null;
         }
 
+        $soi = $this->withPrefix($this->address['soi'] ?? null, 'ซอย');
+        $isBangkok = $this->isBangkokProvince($this->address['province'] ?? null);
+
         $parts = array_filter([
             $this->address['address1'] ?? null,
-            $this->address['district'] ?? null,
-            $this->address['amphur'] ?? null,
-            $this->address['province_name'] ?? null,
-            isset($this->address['zipcode']) ? (string) $this->address['zipcode'] : null,
+            $soi,
+            $this->withPrefix($this->address['street'] ?? null, 'ถนน'),
+            $this->withPrefix($this->address['district'] ?? null, $isBangkok ? 'แขวง' : 'ตำบล'),
+            $this->withPrefix($this->address['amphur'] ?? null, $isBangkok ? 'เขต' : 'อำเภอ'),
+            $this->address['province'] ?? null,
         ]);
 
         return $parts === [] ? null : trim(implode(' ', $parts));
@@ -81,7 +87,25 @@ readonly class PropertyData
             return number_format($this->priceAmount) . ' บาท';
         }
 
-        return 'ติดต่อสอบถาม';
+        return '';
+    }
+
+    public function formattedSalePrice(): string
+    {
+        if ($this->priceAmount > 0) {
+            return number_format($this->priceAmount) . ' บาท';
+        }
+
+        return '';
+    }
+
+    public function formattedPriceRent(): ?string
+    {
+        if ($this->priceRent > 0) {
+            return number_format($this->priceRent) . ' บาท/เดือน';
+        }
+
+        return null;
     }
 
     /**
@@ -109,5 +133,27 @@ readonly class PropertyData
     public function thumbnailOrPlaceholder(): string
     {
         return $this->thumbnailUrl ?: asset('images/cover/no-image.webp');
+    }
+
+    private function isBangkokProvince(mixed $province): bool
+    {
+        $province = trim((string) ($province ?? ''));
+
+        return $province !== '' && str_contains($province, 'กรุงเทพ');
+    }
+
+    private function withPrefix(mixed $value, string $prefix): ?string
+    {
+        $value = trim((string) ($value ?? ''));
+
+        if ($value === '') {
+            return null;
+        }
+
+        if (str_starts_with($value, $prefix)) {
+            return $value;
+        }
+
+        return $prefix . $value;
     }
 }

@@ -46,7 +46,7 @@
             </aside>
 
             <div class="order-1 xl:order-2 xl:col-span-7">
-                <form method="POST" action="{{ route('property-requests.store') }}" class="space-y-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm md:p-8">
+                <form method="POST" action="{{ route('property-requests.store') }}" enctype="multipart/form-data" class="space-y-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm md:p-8">
                     @csrf
 
                     {{-- ข้อมูลทรัพย์ --}}
@@ -71,8 +71,8 @@
 
                             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                 <div>
-                                    <label for="price_amount" class="mb-1 block text-sm font-medium text-gray-700">ราคาขาย (บาท)</label>
-                                    <input type="number" id="price_amount" name="price_amount" value="{{ old('price_amount') }}" min="0" step="1" placeholder="เช่น 3500000" class="w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2.5 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none">
+                                    <label for="price_amount" class="mb-1 block text-sm font-medium text-gray-700">ราคาขาย (บาท) <span class="text-red-500">*</span></label>
+                                    <input type="number" id="price_amount" name="price_amount" value="{{ old('price_amount') }}" min="1" step="1" required placeholder="เช่น 3500000" class="w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2.5 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none">
                                     @error('price_amount')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                     @enderror
@@ -124,16 +124,61 @@
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
                             </div>
+
+                            <div
+                                x-data="{
+                                    previews: [],
+                                    maxFiles: 10,
+                                    addFiles(event) {
+                                        const files = Array.from(event.target.files || []);
+                                        this.previews.forEach((preview) => URL.revokeObjectURL(preview.url));
+                                        this.previews = files.slice(0, this.maxFiles).map((file) => ({
+                                            name: file.name,
+                                            url: URL.createObjectURL(file),
+                                        }));
+                                    },
+                                }"
+                            >
+                                <label for="images" class="mb-1 block text-sm font-medium text-gray-700">รูปภาพทรัพย์</label>
+                                <div class="rounded-xl border border-dashed border-gray-300 bg-gray-50 p-4">
+                                    <input
+                                        type="file"
+                                        id="images"
+                                        name="images[]"
+                                        accept="image/jpeg,image/jpg,image/png,image/webp"
+                                        multiple
+                                        @change="addFiles($event)"
+                                        class="block w-full text-sm text-gray-600 file:mr-4 file:rounded-lg file:border-0 file:bg-blue-700 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-blue-800"
+                                    >
+                                    <p class="mt-2 text-xs text-gray-500">อัปโหลดได้สูงสุด 10 รูป รองรับ JPG, PNG, WEBP ไม่เกิน 5MB ต่อรูป</p>
+                                </div>
+
+                                <div class="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3" x-show="previews.length > 0" x-cloak>
+                                    <template x-for="preview in previews" :key="preview.url">
+                                        <div class="overflow-hidden rounded-xl border border-gray-200 bg-white">
+                                            <img :src="preview.url" :alt="preview.name" class="aspect-[4/3] w-full object-cover">
+                                            <p class="truncate px-2 py-1.5 text-xs text-gray-500" x-text="preview.name"></p>
+                                        </div>
+                                    </template>
+                                </div>
+
+                                @error('images')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                                @error('images.*')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
                         </div>
                     </section>
 
                     {{-- ที่อยู่ทรัพย์ --}}
-                    <section class="border-t border-gray-100 pt-6" style="display: none;">
+                    <section class="border-t border-gray-100 pt-6">
                         <h2 class="heading-font text-lg font-bold text-blue-900">ที่อยู่ทรัพย์</h2>
 
                         <div class="mt-4 space-y-4">
                             <div>
-                                <label for="address_address1" class="mb-1 block text-sm font-medium text-gray-700">บ้านเลขที่ / ที่อยู่</label>
+                                <label for="address_address1" class="mb-1 block text-sm font-medium text-gray-700">ที่อยู่/ถนน/ซอย/ทำเล</label>
                                 <input type="text" id="address_address1" name="address[address1]" value="{{ old('address.address1') }}" class="w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2.5 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none">
                                 @error('address.address1')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
                             </div>

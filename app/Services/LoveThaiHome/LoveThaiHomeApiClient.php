@@ -36,6 +36,7 @@ class LoveThaiHomeApiClient implements LoveThaiHomeApiClientInterface
             'agent_id' => $filters['agent_id'] ?? null,
             'user_id' => $filters['user_id'] ?? null,
             'zone_id' => $filters['zone_id'] ?? null,
+            'tag_id' => $filters['tag_id'] ?? null,
             'page' => $filters['page'] ?? 1,
             'per_page' => min(max((int) ($filters['per_page'] ?? 30), 1), 100),
         ], fn ($value) => $value !== null && $value !== '');
@@ -111,7 +112,7 @@ class LoveThaiHomeApiClient implements LoveThaiHomeApiClientInterface
     public function createCustomerAsset(array|CustomerAssetData $payload): array
     {
         if ($payload instanceof CustomerAssetData) {
-            $payload = $payload->toArray();
+            return $this->postMultipart('customer-assets', $payload->toMultipart());
         }
 
         return $this->post('customer-assets', $payload);
@@ -159,6 +160,15 @@ class LoveThaiHomeApiClient implements LoveThaiHomeApiClientInterface
     }
 
     /**
+     * @param  list<array{name: string, contents: string|resource, filename?: string}>  $multipart
+     * @return array<string, mixed>
+     */
+    protected function postMultipart(string $path, array $multipart): array
+    {
+        return $this->request('post', $path, ['multipart' => $multipart]);
+    }
+
+    /**
      * @param  array<string, mixed>  $options
      * @return array<string, mixed>
      */
@@ -167,8 +177,17 @@ class LoveThaiHomeApiClient implements LoveThaiHomeApiClientInterface
         $this->ensureConfigured();
 
         try {
-            $response = $this->http()
-                ->{$method}($this->endpoint($path), $options['json'] ?? $options['query'] ?? [])
+            $client = isset($options['multipart'])
+                ? $this->http(asJson: false)->asMultipart()
+                : $this->http();
+
+            $payload = $options['multipart']
+                ?? $options['json']
+                ?? $options['query']
+                ?? [];
+
+            $response = $client
+                ->{$method}($this->endpoint($path), $payload)
                 ->throw();
 
             $json = $response->json();
@@ -191,13 +210,12 @@ class LoveThaiHomeApiClient implements LoveThaiHomeApiClientInterface
         }
     }
 
-    protected function http(): PendingRequest
+    protected function http(bool $asJson = true): PendingRequest
     {
         $retry = config('lovethaihome_api.retry');
 
-        return Http::baseUrl(config('lovethaihome_api.base_url'))
+        $request = Http::baseUrl(config('lovethaihome_api.base_url'))
             ->acceptJson()
-            ->asJson()
             ->timeout(config('lovethaihome_api.timeout'))
             ->withToken(config('lovethaihome_api.token'))
             ->retry(
@@ -205,6 +223,12 @@ class LoveThaiHomeApiClient implements LoveThaiHomeApiClientInterface
                 $retry['sleep_ms'],
                 throw: false,
             );
+
+        if ($asJson) {
+            $request = $request->asJson();
+        }
+
+        return $request;
     }
 
     protected function endpoint(string $path): string

@@ -1,27 +1,27 @@
 @props([
-    'property',
-    'imageIndex' => null,
+'property',
+'imageIndex' => null,
 ])
 
 @php
-    $loadEager = false;
-    $highPriority = false;
+$loadEager = false;
+$highPriority = false;
+$propertyTypeCode = $property->assetType['code'] ?? null;
+$propertyUrl = ($propertyTypeCode && $property->code !== '')
+? route('pages.properties.showByCode', [
+'propertyTypeCode' => $propertyTypeCode,
+'propertyCode' => $property->code,
+'slug' => $property->slug,
+])
+: route('properties.show', $property->id);
 @endphp
 
 <article class="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-lg">
-    <a
-        href="{{ route('properties.show', $property->id) }}"
-        class="absolute inset-0 z-0"
-        aria-label="{{ $property->name }}"></a>
+    <a href="{{ $propertyUrl }}" class="absolute inset-0 z-0" aria-label="{{ $property->name }}"></a>
 
     <div class="pointer-events-none relative z-10 flex flex-1 flex-col">
         <div class="relative aspect-[4/3] overflow-hidden bg-gray-100">
-            <x-lazy-image
-                :src="$property->thumbnailOrPlaceholder()"
-                :alt="$property->name"
-                :eager="$loadEager"
-                :high-priority="$highPriority"
-                class="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+            <x-lazy-image :src="$property->thumbnailOrPlaceholder()" :alt="$property->name" :eager="$loadEager" :high-priority="$highPriority" class="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
 
             <div class="absolute left-3 top-3 flex flex-wrap gap-1.5">
                 @if ($property->isRecommend)
@@ -49,7 +49,12 @@
         </div>
 
         <div class="flex flex-1 flex-col p-4">
-            <p class="text-xl font-bold text-red-700 heading-font">{{ $property->formattedPrice() }}</p>
+            <div class="flex items-baseline justify-between gap-3">
+                <p class="text-lg font-bold text-red-700 heading-font">{{ $property->formattedSalePrice() }}</p>
+                @if ($rentPrice = $property->formattedPriceRent())
+                <p class="shrink-0 text-lg font-bold text-blue-700 heading-font">{{ $rentPrice }}</p>
+                @endif
+            </div>
 
             @if ($location = $property->formattedAddress())
             <p class="mt-1 flex items-center gap-1 text-sm text-gray-500">

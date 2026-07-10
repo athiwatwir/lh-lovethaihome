@@ -10,14 +10,20 @@ $listQuery = array_filter([
     'user_id' => $currentUser?->id,
     'zone_id' => $zoneId,
     'asset_type_id' => $currentType?->id,
+    'tag_id' => $tagId ?? null,
+    'tag_name' => data_get($currentTag, 'name'),
 ]);
 $typeFilterBaseQuery = array_filter([
     'user_id' => $currentUser?->id,
     'zone_id' => $zoneId,
+    'tag_id' => $tagId ?? null,
+    'tag_name' => data_get($currentTag, 'name'),
 ]);
 $zonePickerQuery = array_filter([
     'user_id' => $currentUser?->id,
     'asset_type_id' => $currentType?->id,
+    'tag_id' => $tagId ?? null,
+    'tag_name' => data_get($currentTag, 'name'),
 ]);
 $showZoneModal = ! $zoneId && ! ($isSearch ?? false);
 $canShowResults = ($isSearch ?? false) || $zoneId;
@@ -88,7 +94,9 @@ $canShowResults = ($isSearch ?? false) || $zoneId;
             <div class="flex flex-wrap items-start justify-between gap-4">
                 <div>
                     <h1 class="heading-font text-2xl font-bold md:text-3xl">
-                        @if ($isSearch ?? false)
+                        @if ($currentTag)
+                        ทำเล{{ $currentTag['name'] ? ' '.$currentTag['name'] : '' }}
+                        @elseif ($isSearch ?? false)
                         ผลการค้นหาทรัพย์สิน
                         @elseif ($currentUser)
                         ทรัพย์ของ {{ $currentUser->fullName() }}
@@ -251,7 +259,7 @@ $canShowResults = ($isSearch ?? false) || $zoneId;
 
             @if ($paginator && $paginator->hasPages())
             <div class="mt-10">
-                {{ $paginator->onEachSide(1)->links() }}
+                {{ $paginator->onEachSide(0)->links() }}
             </div>
             @endif
         </div>

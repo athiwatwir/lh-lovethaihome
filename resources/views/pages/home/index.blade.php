@@ -242,16 +242,16 @@
                 </a>
             </div>
             <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
-                <a href="{{ route('articles.category', config('lovethaihome_articles.job_category_id')) }}" class="group relative block overflow-hidden">
-                    <x-lazy-image :src="asset('images/cover/lovethaihome-cover-job.webp')" alt="ความรู้ด้านอสังหาริมทรัพย์" :eager="true" class="w-full object-cover transition duration-300 group-hover:scale-105" />
-                    <span class="pointer-events-none absolute inset-0 flex items-center justify-center" aria-hidden="true">
-                        <span class="flex h-12 w-12 items-center justify-center rounded-full border border-white/80 bg-black/15 text-white shadow-sm backdrop-blur-[2px] transition duration-300 group-hover:scale-110 group-hover:bg-black/25 sm:h-14 sm:w-14">
-                            <svg class="ml-0.5 h-5 w-5 sm:h-6 sm:w-6" fill="none" stroke="currentColor" stroke-width="1.25" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 5.5v13l11-6.5z" />
-                            </svg>
-                        </span>
-                    </span>
-                </a>
+                <div class="relative aspect-video w-full bg-black">
+                    <iframe
+                        class="absolute inset-0 h-full w-full border-0"
+                        src="https://www.youtube.com/embed/jBHaD0A9RvE"
+                        title="วิดีโอ Love Thai Home"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        referrerpolicy="strict-origin-when-cross-origin"
+                        allowfullscreen
+                        loading="lazy"></iframe>
+                </div>
             </div>
             <div class="flex h-full flex-col justify-center gap-5 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
                 <div class="text-center">

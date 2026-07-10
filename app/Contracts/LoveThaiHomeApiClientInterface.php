@@ -23,6 +23,7 @@ interface LoveThaiHomeApiClientInterface
      *     agent_id?: string|null,
      *     user_id?: string|null,
      *     zone_id?: string|null,
+     *     tag_id?: string|int|null,
      *     page?: int,
      *     per_page?: int,
      * }  $filters

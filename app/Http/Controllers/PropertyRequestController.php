@@ -51,6 +51,7 @@ class PropertyRequestController extends Controller
             areaWah: (float) ($validated['area_wah'] ?? 0),
             bedroom: isset($validated['bedroom']) ? (int) $validated['bedroom'] : null,
             bathroom: isset($validated['bathroom']) ? (int) $validated['bathroom'] : null,
+            images: array_values($request->file('images', []) ?? []),
         );
 
         try {
