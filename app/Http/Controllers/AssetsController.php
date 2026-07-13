@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\RedirectResponse;
+
 class AssetsController extends Controller
 {
-    //
-
-    public function view($id)
+    public function view(string $id): RedirectResponse
     {
-        // dd($id);
+        //dd($id);
         return redirect()->route('properties.show', ['property' => $id]);
     }
 }

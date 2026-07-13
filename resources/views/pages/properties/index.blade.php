@@ -259,7 +259,7 @@ $canShowResults = ($isSearch ?? false) || $zoneId;
 
             @if ($paginator && $paginator->hasPages())
             <div class="mt-10">
-                {{ $paginator->onEachSide(0)->links() }}
+                {{ $paginator->onEachSide(1)->links() }}
             </div>
             @endif
         </div>

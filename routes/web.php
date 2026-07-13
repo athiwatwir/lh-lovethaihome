@@ -23,9 +23,10 @@ use Illuminate\Support\Facades\Route;
 // ── Home ─────────────────────────────────────────────────────────────────────
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
-Route::get('/{propertyTypeCode}/{propertyCode}/{slug}', [PropertyController::class, 'showByCode'])
+Route::get('/p/{propertyTypeCode}/{propertyCode}/{slug?}', [PropertyController::class, 'showByCode'])
     ->where('propertyTypeCode', '[A-Za-z0-9-_]+')
     ->where('propertyCode', '[A-Za-z0-9-_]+')
+    ->where('slug', '.+')
     ->name('pages.properties.showByCode');
 
 
@@ -36,6 +37,16 @@ Route::post('/properties/{property}/views', [PropertyController::class, 'recordV
 Route::get('/properties/{property}', [PropertyController::class, 'show'])
     ->whereUuid('property')
     ->name('properties.show');
+
+Route::get('/properties/{property}/image', [PropertyController::class, 'showImage'])
+    ->whereUuid('property')
+    ->name('properties.showImage');
+Route::get('/properties/{property}/images/{index}.jpg', [PropertyController::class, 'showImageFile'])
+    ->whereUuid('property')
+    ->whereNumber('index')
+    ->name('properties.showImageFile');
+
+
 Route::get('/property-requests', [PropertyRequestController::class, 'index'])->name('property-requests.index');
 Route::post('/property-requests', [PropertyRequestController::class, 'store'])
     ->middleware('throttle:5,10')

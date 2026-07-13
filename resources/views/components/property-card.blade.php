@@ -6,14 +6,7 @@
 @php
 $loadEager = false;
 $highPriority = false;
-$propertyTypeCode = $property->assetType['code'] ?? null;
-$propertyUrl = ($propertyTypeCode && $property->code !== '')
-? route('pages.properties.showByCode', [
-'propertyTypeCode' => $propertyTypeCode,
-'propertyCode' => $property->code,
-'slug' => $property->slug,
-])
-: route('properties.show', $property->id);
+$propertyUrl = $property->detailUrl();
 @endphp
 
 <article class="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-lg">

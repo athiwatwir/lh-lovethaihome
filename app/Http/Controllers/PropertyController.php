@@ -7,6 +7,8 @@ use App\Data\LoveThaiHome\PropertyData;
 use App\Data\LoveThaiHome\PropertyDetailData;
 use App\Data\LoveThaiHome\PropertyTypeData;
 use App\Support\PropertySeo;
+use App\Support\RemoteImageToJpeg;
+use RuntimeException;
 use App\Services\LoveThaiHome\Exceptions\LoveThaiHomeApiException;
 use App\Services\LoveThaiHome\LoveThaiHomeService;
 use Illuminate\Http\Request;
@@ -16,6 +18,9 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
+
 
 class PropertyController extends Controller
 {
@@ -156,7 +161,7 @@ class PropertyController extends Controller
     }
 
 
-    public function showByCode(string $propertyTypeCode, string $propertyCode, LoveThaiHomeService $api): View
+    public function showByCode(string $propertyTypeCode, string $propertyCode, LoveThaiHomeService $api, ?string $slug = null): View
     {
         try {
             $detail = $api->property($propertyCode);
@@ -165,6 +170,7 @@ class PropertyController extends Controller
                 'message' => $exception->getMessage(),
                 'status' => $exception->statusCode,
                 'property_code' => $propertyCode,
+                'slug' => $slug,
             ]);
 
             if ($exception->statusCode === 404) {
@@ -181,6 +187,72 @@ class PropertyController extends Controller
         return view('pages.properties.show', [
             'property' => $detail,
             'user' => $user,
+        ]);
+    }
+
+    public function showImage(string $property, LoveThaiHomeService $api): View
+    {
+        try {
+            $detail = $api->property($property);
+        } catch (LoveThaiHomeApiException $exception) {
+            Log::warning('Failed to load property detail from API.', [
+                'message' => $exception->getMessage(),
+                'status' => $exception->statusCode,
+                'property_id' => $property,
+            ]);
+
+            if ($exception->statusCode === 404) {
+                throw new NotFoundHttpException('ไม่พบทรัพย์สินที่ต้องการ');
+            }
+
+            abort(503, 'ไม่สามารถโหลดข้อมูลทรัพย์ได้ในขณะนี้');
+        }
+
+        PropertySeo::apply($detail);
+
+        return view('pages.properties.showImage', [
+            'property' => $detail,
+        ]);
+    }
+
+    public function showImageFile(string $property, int $index, Request $request, LoveThaiHomeService $api): SymfonyResponse
+    {
+        if ($index < 0) {
+            throw new NotFoundHttpException('ไม่พบรูปภาพ');
+        }
+
+        try {
+            $detail = $api->property($property);
+        } catch (LoveThaiHomeApiException $exception) {
+            if ($exception->statusCode === 404) {
+                throw new NotFoundHttpException('ไม่พบทรัพย์สินที่ต้องการ');
+            }
+
+            abort(503, 'ไม่สามารถโหลดข้อมูลทรัพย์ได้ในขณะนี้');
+        }
+
+        $images = $detail->masterGalleryImages();
+
+        if (! isset($images[$index])) {
+            throw new NotFoundHttpException('ไม่พบรูปภาพ');
+        }
+
+        $sourceUrl = $images[$index];
+        $filename = trim($detail->code !== '' ? $detail->code : $detail->id) . '-' . ($index + 1) . '.jpg';
+        $disposition = $request->boolean('download') ? 'attachment' : 'inline';
+
+        try {
+            $jpeg = RemoteImageToJpeg::convert($sourceUrl);
+        } catch (RuntimeException $exception) {
+            RemoteImageToJpeg::logFailure($sourceUrl, $exception);
+            abort(502, 'ไม่สามารถแปลงรูปภาพได้ในขณะนี้');
+        }
+
+        return response($jpeg, 200, [
+            'Content-Type' => 'image/jpeg',
+            'Content-Disposition' => $disposition . '; filename="' . $filename . '"',
+            'Cache-Control' => 'public, max-age=86400',
+            'X-Content-Type-Options' => 'nosniff',
         ]);
     }
 

@@ -2,6 +2,8 @@
 
 namespace App\Data\LoveThaiHome;
 
+use Illuminate\Support\Str;
+
 readonly class PropertyData
 {
     /**
@@ -133,6 +135,40 @@ readonly class PropertyData
     public function thumbnailOrPlaceholder(): string
     {
         return $this->thumbnailUrl ?: asset('images/cover/no-image.webp');
+    }
+
+    public function urlSlug(): string
+    {
+        $slug = trim((string) ($this->slug ?? ''));
+
+        if ($slug !== '') {
+            return $slug;
+        }
+
+        $fromName = Str::slug($this->name);
+
+        return $fromName !== '' ? $fromName : $this->code;
+    }
+
+    public function detailUrl(): string
+    {
+        $propertyTypeCode = $this->assetType['code'] ?? null;
+
+        if ($propertyTypeCode && $this->code !== '') {
+            $params = [
+                'propertyTypeCode' => $propertyTypeCode,
+                'propertyCode' => $this->code,
+            ];
+
+            $slug = $this->urlSlug();
+            if ($slug !== '') {
+                $params['slug'] = $slug;
+            }
+
+            return route('pages.properties.showByCode', $params);
+        }
+
+        return route('properties.show', $this->id);
     }
 
     private function isBangkokProvince(mixed $province): bool

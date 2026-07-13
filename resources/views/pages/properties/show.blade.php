@@ -177,6 +177,14 @@ $breadcrumbSchemaJson = json_encode(PropertySeo::breadcrumbSchema($property), JS
                     <x-property-map :latitude="$property->latitude" :longitude="$property->longitude" :label="$property->name" :google-maps-url="$property->googleMapsUrl()" :google-maps-directions-url="$property->googleMapsDirectionsUrl()" />
                     @endif
 
+                    <div class="mt-6 flex justify-end border-t border-gray-100 pt-6">
+                        <a href="{{ route('properties.showImage', $property->id) }}" target="_blank" rel="noopener noreferrer" class="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-gray-400 text-white shadow-sm transition" title="ดูรูปภาพทั้งหมด" aria-label="ดูรูปภาพทั้งหมด">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20 10 10 0 000-20z" />
+                            </svg>
+                        </a>
+                    </div>
+
 
                 </div>
             </div>

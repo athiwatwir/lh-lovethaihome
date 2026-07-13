@@ -3,9 +3,9 @@
 @section('content')
 @php
 $officeAddress = '257/6-7 ซอยลาดพร้าว 101 ถนนลาดพร้าว แขวงคลองเจ้าคุณสิงห์ เขตวังทองหลาง กรุงเทพมหานคร 10310';
-$mapsQuery = urlencode($officeAddress);
-$mapsEmbedUrl = 'https://maps.google.com/maps?q='.$mapsQuery.'&hl=th&z=16&output=embed';
-$mapsDirectionsUrl = 'https://www.google.com/maps/dir/?api=1&destination='.$mapsQuery;
+$mapsUrl = 'https://maps.app.goo.gl/gz7X9yRDeEBGpzVP9';
+// Short links cannot be embedded in iframes; coordinates resolved from the shared place URL.
+$mapsEmbedUrl = 'https://maps.google.com/maps?q=13.7771847,100.6295631&hl=th&z=17&output=embed';
 $contacts = [
     [
         'name' => 'คุณจุ๋ม',
@@ -117,7 +117,7 @@ $channels = [
 
                 <div class="flex flex-wrap gap-3 p-5 sm:p-6">
                     <a
-                        href="{{ $mapsDirectionsUrl }}"
+                        href="{{ $mapsUrl }}"
                         target="_blank"
                         rel="noopener noreferrer"
                         class="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-blue-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-800 sm:flex-none"
@@ -128,7 +128,7 @@ $channels = [
                         เปิดเส้นทางใน Google Maps
                     </a>
                     <a
-                        href="https://maps.google.com/?q={{ $mapsQuery }}"
+                        href="{{ $mapsUrl }}"
                         target="_blank"
                         rel="noopener noreferrer"
                         class="inline-flex flex-1 items-center justify-center rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm font-semibold text-gray-700 transition hover:border-blue-300 hover:text-blue-700 sm:flex-none"

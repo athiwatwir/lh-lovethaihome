@@ -316,12 +316,122 @@
                     ดาวน์โหลด
                 </a>
             </div>
-            <div class="bg-white rounded-2xl p-6 border border-gray-200 flex items-center shadow-sm justify-between">
+            <div
+                class="bg-white rounded-2xl p-6 border border-gray-200 flex items-center shadow-sm justify-between"
+                x-data="{
+                    mapOpen: false,
+                    saving: false,
+                    mapUrl: @js(asset('images/map-2.jpg')),
+                    fileName: 'lovethaihome-company-map.jpg',
+                    async saveMap() {
+                        if (this.saving) {
+                            return;
+                        }
+
+                        this.saving = true;
+
+                        try {
+                            const response = await fetch(this.mapUrl, { cache: 'force-cache' });
+                            if (! response.ok) {
+                                throw new Error('download failed');
+                            }
+
+                            const blob = await response.blob();
+                            const file = new File([blob], this.fileName, { type: blob.type || 'image/jpeg' });
+
+                            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                                await navigator.share({
+                                    files: [file],
+                                    title: 'ที่ตั้งของบริษัท Love Thai Home',
+                                });
+                                return;
+                            }
+
+                            const objectUrl = URL.createObjectURL(blob);
+                            const link = document.createElement('a');
+                            link.href = objectUrl;
+                            link.download = this.fileName;
+                            link.rel = 'noopener';
+                            document.body.appendChild(link);
+                            link.click();
+                            link.remove();
+                            URL.revokeObjectURL(objectUrl);
+                        } catch (error) {
+                            if (error?.name === 'AbortError') {
+                                return;
+                            }
+
+                            window.open(this.mapUrl, '_blank', 'noopener,noreferrer');
+                        } finally {
+                            this.saving = false;
+                        }
+                    },
+                }"
+            >
                 <div class="flex items-center">
                     <img src="https://placehold.co/50x50/transparent/ef4444?text=Map" alt="Map" class="w-10 mr-4">
                     <h4 class="font-bold text-blue-900 text-sm">ที่ตั้งของบริษัท</h4>
                 </div>
-                <button class="shrink-0 bg-blue-600 text-white text-xs px-4 py-2 rounded hover:bg-blue-700">ดูแผนที่</button>
+                <button
+                    type="button"
+                    @click="mapOpen = true"
+                    class="shrink-0 bg-blue-600 text-white text-xs px-4 py-2 rounded hover:bg-blue-700"
+                >
+                    ดูแผนที่
+                </button>
+
+                <div
+                    x-show="mapOpen"
+                    x-cloak
+                    x-transition:enter="transition ease-out duration-200"
+                    x-transition:enter-start="opacity-0"
+                    x-transition:enter-end="opacity-100"
+                    x-transition:leave="transition ease-in duration-150"
+                    x-transition:leave-start="opacity-100"
+                    x-transition:leave-end="opacity-0"
+                    class="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 p-4"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label="แผนที่ที่ตั้งของบริษัท"
+                    @keydown.escape.window="mapOpen = false"
+                    @click.self="mapOpen = false"
+                >
+                    <div class="relative flex max-h-[90vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
+                        <div class="flex shrink-0 items-center justify-between gap-3 border-b border-gray-100 px-4 py-3">
+                            <p class="text-sm font-semibold text-blue-900">ที่ตั้งของบริษัท</p>
+                            <div class="flex items-center gap-2">
+                                <button
+                                    type="button"
+                                    @click="saveMap()"
+                                    :disabled="saving"
+                                    class="inline-flex min-h-9 items-center gap-1.5 rounded-lg bg-blue-700 px-3 py-2 text-xs font-semibold text-white transition hover:bg-blue-800 disabled:cursor-wait disabled:opacity-70"
+                                >
+                                    <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" />
+                                    </svg>
+                                    <span x-text="saving ? 'กำลังบันทึก...' : 'บันทึกรูป'"></span>
+                                </button>
+                                <button
+                                    type="button"
+                                    @click="mapOpen = false"
+                                    class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-gray-100 text-gray-600 transition hover:bg-gray-200"
+                                    aria-label="ปิด"
+                                >
+                                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <img
+                            src="{{ asset('images/map-2.jpg') }}"
+                            alt="แผนที่ที่ตั้งของบริษัท Love Thai Home"
+                            class="min-h-0 flex-1 object-contain bg-gray-50"
+                            loading="lazy"
+                            decoding="async"
+                        >
+                    </div>
+                </div>
             </div>
         </div>
     </div>

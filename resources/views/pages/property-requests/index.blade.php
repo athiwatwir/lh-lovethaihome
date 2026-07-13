@@ -117,6 +117,45 @@
                                 </div>
                             </div>
 
+                            {{-- ที่อยู่ทรัพย์ --}}
+                            <section class="border-t border-gray-100 pt-6">
+                                <h2 class="heading-font text-lg font-bold text-blue-900">ที่อยู่ทรัพย์</h2>
+
+                                <div class="mt-4 space-y-4">
+                                    <div>
+                                        <label for="address_address1" class="mb-1 block text-sm font-medium text-gray-700">ที่อยู่/ถนน/ซอย/ทำเล</label>
+                                        <input type="text" id="address_address1" name="address[address1]" value="{{ old('address.address1') }}" class="w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2.5 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none">
+                                        @error('address.address1')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+                                    </div>
+
+                                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                        <div>
+                                            <label for="address_district" class="mb-1 block text-sm font-medium text-gray-700">ตำบล / แขวง</label>
+                                            <input type="text" id="address_district" name="address[district]" value="{{ old('address.district') }}" class="w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2.5 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none">
+                                            @error('address.district')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+                                        </div>
+                                        <div>
+                                            <label for="address_amphur" class="mb-1 block text-sm font-medium text-gray-700">อำเภอ / เขต</label>
+                                            <input type="text" id="address_amphur" name="address[amphur]" value="{{ old('address.amphur') }}" class="w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2.5 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none">
+                                            @error('address.amphur')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+                                        </div>
+                                    </div>
+
+                                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                        <div>
+                                            <label for="address_province_name" class="mb-1 block text-sm font-medium text-gray-700">จังหวัด</label>
+                                            <input type="text" id="address_province_name" name="address[province_name]" value="{{ old('address.province_name') }}" class="w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2.5 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none">
+                                            @error('address.province_name')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+                                        </div>
+                                        <div style="display: none;">
+                                            <label for="address_zipcode" class="mb-1 block text-sm font-medium text-gray-700">รหัสไปรษณีย์</label>
+                                            <input type="text" id="address_zipcode" name="address[zipcode]" value="{{ old('address.zipcode') }}" maxlength="10" class="w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2.5 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none">
+                                            @error('address.zipcode')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+
                             <div>
                                 <label for="description" class="mb-1 block text-sm font-medium text-gray-700">รายละเอียดเพิ่มเติม</label>
                                 <textarea id="description" name="description" rows="4" placeholder="บอกรายละเอียดทรัพย์ ทำเล จุดเด่น หรือข้อมูลอื่นๆ" class="w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2.5 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none">{{ old('description') }}</textarea>
@@ -125,8 +164,7 @@
                                 @enderror
                             </div>
 
-                            <div
-                                x-data="{
+                            <div x-data="{
                                     previews: [],
                                     maxFiles: 10,
                                     addFiles(event) {
@@ -137,19 +175,10 @@
                                             url: URL.createObjectURL(file),
                                         }));
                                     },
-                                }"
-                            >
+                                }">
                                 <label for="images" class="mb-1 block text-sm font-medium text-gray-700">รูปภาพทรัพย์</label>
                                 <div class="rounded-xl border border-dashed border-gray-300 bg-gray-50 p-4">
-                                    <input
-                                        type="file"
-                                        id="images"
-                                        name="images[]"
-                                        accept="image/jpeg,image/jpg,image/png,image/webp"
-                                        multiple
-                                        @change="addFiles($event)"
-                                        class="block w-full text-sm text-gray-600 file:mr-4 file:rounded-lg file:border-0 file:bg-blue-700 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-blue-800"
-                                    >
+                                    <input type="file" id="images" name="images[]" accept="image/jpeg,image/jpg,image/png,image/webp" multiple @change="addFiles($event)" class="block w-full text-sm text-gray-600 file:mr-4 file:rounded-lg file:border-0 file:bg-blue-700 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-blue-800">
                                     <p class="mt-2 text-xs text-gray-500">อัปโหลดได้สูงสุด 10 รูป รองรับ JPG, PNG, WEBP ไม่เกิน 5MB ต่อรูป</p>
                                 </div>
 
@@ -172,44 +201,7 @@
                         </div>
                     </section>
 
-                    {{-- ที่อยู่ทรัพย์ --}}
-                    <section class="border-t border-gray-100 pt-6">
-                        <h2 class="heading-font text-lg font-bold text-blue-900">ที่อยู่ทรัพย์</h2>
 
-                        <div class="mt-4 space-y-4">
-                            <div>
-                                <label for="address_address1" class="mb-1 block text-sm font-medium text-gray-700">ที่อยู่/ถนน/ซอย/ทำเล</label>
-                                <input type="text" id="address_address1" name="address[address1]" value="{{ old('address.address1') }}" class="w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2.5 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none">
-                                @error('address.address1')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
-                            </div>
-
-                            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                                <div>
-                                    <label for="address_district" class="mb-1 block text-sm font-medium text-gray-700">ตำบล / แขวง</label>
-                                    <input type="text" id="address_district" name="address[district]" value="{{ old('address.district') }}" class="w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2.5 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none">
-                                    @error('address.district')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
-                                </div>
-                                <div>
-                                    <label for="address_amphur" class="mb-1 block text-sm font-medium text-gray-700">อำเภอ / เขต</label>
-                                    <input type="text" id="address_amphur" name="address[amphur]" value="{{ old('address.amphur') }}" class="w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2.5 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none">
-                                    @error('address.amphur')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
-                                </div>
-                            </div>
-
-                            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                                <div>
-                                    <label for="address_province_name" class="mb-1 block text-sm font-medium text-gray-700">จังหวัด</label>
-                                    <input type="text" id="address_province_name" name="address[province_name]" value="{{ old('address.province_name') }}" class="w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2.5 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none">
-                                    @error('address.province_name')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
-                                </div>
-                                <div style="display: none;">
-                                    <label for="address_zipcode" class="mb-1 block text-sm font-medium text-gray-700">รหัสไปรษณีย์</label>
-                                    <input type="text" id="address_zipcode" name="address[zipcode]" value="{{ old('address.zipcode') }}" maxlength="10" class="w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2.5 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none">
-                                    @error('address.zipcode')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
-                                </div>
-                            </div>
-                        </div>
-                    </section>
 
                     {{-- ข้อมูลติดต่อ --}}
                     <section class="border-t border-gray-100 pt-6">

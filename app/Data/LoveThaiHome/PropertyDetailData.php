@@ -34,6 +34,7 @@ readonly class PropertyDetailData
         public ?string $createdAt,
         public ?string $description,
         public array $images,
+        public array $masterImages,
         public ?array $address,
         public ?int $bedroom,
         public ?int $bathroom,
@@ -70,6 +71,7 @@ readonly class PropertyDetailData
             createdAt: isset($data['created_at']) ? (string) $data['created_at'] : null,
             description: isset($data['description']) ? (string) $data['description'] : null,
             images: self::parseImages($data),
+            masterImages: self::parseMasterImages($data),
             address: isset($data['address']) ? (array) $data['address'] : null,
             bedroom: isset($data['bedroom']) ? (int) $data['bedroom'] : null,
             bathroom: isset($data['bathroom']) ? (int) $data['bathroom'] : null,
@@ -127,6 +129,15 @@ readonly class PropertyDetailData
         }
 
         return $images;
+    }
+
+    public function masterGalleryImages(): array
+    {
+        if ($this->masterImages !== []) {
+            return $this->masterImages;
+        }
+
+        return $this->galleryImages();
     }
 
     public function formattedPrice(): string
@@ -294,7 +305,7 @@ readonly class PropertyDetailData
                 }
 
                 if (is_array($item)) {
-                    return $item['url'] ?? $item['image_url'] ?? $item['thumbnail_url'] ?? null;
+                    return $item['url'] ?? $item['image_url'] ?? $item['thumbnail_url'] ?? $item['master_url'] ?? null;
                 }
 
                 return null;
@@ -317,7 +328,7 @@ readonly class PropertyDetailData
         }
 
         return collect($raw)
-            ->filter(fn ($item) => is_array($item))
+            ->filter(fn($item) => is_array($item))
             ->map(function (array $item): ?array {
                 $id = isset($item['id']) ? (string) $item['id'] : '';
                 $name = trim((string) ($item['name'] ?? ''));
@@ -330,6 +341,29 @@ readonly class PropertyDetailData
                     'id' => $id,
                     'name' => $name,
                 ];
+            })
+            ->filter()
+            ->values()
+            ->all();
+    }
+
+    private static function parseMasterImages(array $data): array
+    {
+        $raw = $data['images'] ?? [];
+
+        if (! is_array($raw)) {
+            return [];
+        }
+
+        return collect($raw)
+            ->map(function ($item) {
+                if (! is_array($item)) {
+                    return null;
+                }
+
+                $url = $item['master_url'] ?? null;
+
+                return is_string($url) && $url !== '' ? $url : null;
             })
             ->filter()
             ->values()
