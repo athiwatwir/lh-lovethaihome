@@ -8,10 +8,13 @@ use App\Data\LoveThaiHome\CustomerData;
 use App\Http\Requests\StoreCustomerAssetRequest;
 use App\Services\LoveThaiHome\Exceptions\LoveThaiHomeApiException;
 use App\Services\LoveThaiHome\LoveThaiHomeService;
+use App\Support\UploadedImageNormalizer;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
+use RuntimeException;
+use Throwable;
 
 class PropertyRequestController extends Controller
 {
@@ -25,6 +28,23 @@ class PropertyRequestController extends Controller
     public function store(StoreCustomerAssetRequest $request, LoveThaiHomeService $api): RedirectResponse
     {
         $validated = $request->validated();
+        $normalizedImages = [];
+
+        try {
+            $normalizedImages = UploadedImageNormalizer::manyToJpeg(
+                array_values($request->file('images', []) ?? [])
+            );
+        } catch (RuntimeException $exception) {
+            Log::warning('Failed to normalize customer asset images.', [
+                'message' => $exception->getMessage(),
+            ]);
+
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'images' => 'ไม่สามารถประมวลผลรูปภาพได้ กรุณาอัปโหลดเป็น JPG หรือ PNG แล้วลองใหม่',
+                ]);
+        }
 
         $payload = new CustomerAssetData(
             type: 'sell',
@@ -51,7 +71,7 @@ class PropertyRequestController extends Controller
             areaWah: (float) ($validated['area_wah'] ?? 0),
             bedroom: isset($validated['bedroom']) ? (int) $validated['bedroom'] : null,
             bathroom: isset($validated['bathroom']) ? (int) $validated['bathroom'] : null,
-            images: array_values($request->file('images', []) ?? []),
+            images: $normalizedImages,
         );
 
         try {
@@ -68,6 +88,18 @@ class PropertyRequestController extends Controller
                 ->withErrors([
                     'form' => $exception->responseBody['message'] ?? 'ไม่สามารถส่งข้อมูลได้ในขณะนี้ กรุณาลองใหม่อีกครั้ง',
                 ]);
+        } catch (Throwable $exception) {
+            Log::warning('Unexpected error while submitting customer asset.', [
+                'message' => $exception->getMessage(),
+            ]);
+
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'form' => 'ไม่สามารถส่งข้อมูลได้ในขณะนี้ กรุณาลองใหม่อีกครั้ง',
+                ]);
+        } finally {
+            UploadedImageNormalizer::cleanup($normalizedImages);
         }
 
         return redirect()

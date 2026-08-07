@@ -42,10 +42,21 @@ $propertyUrl = $property->detailUrl();
         </div>
 
         <div class="flex flex-1 flex-col p-4">
-            <div class="flex items-baseline justify-between gap-3">
-                <p class="text-lg font-bold text-red-700 heading-font">{{ $property->formattedSalePrice() }}</p>
-                @if ($rentPrice = $property->formattedPriceRent())
-                <p class="shrink-0 text-lg font-bold text-blue-700 heading-font">{{ $rentPrice }}</p>
+            <div class="flex items-start justify-between gap-3">
+                <p class="min-w-0 text-lg md:text-md font-bold text-red-700 heading-font">{{ $property->formattedSalePrice() }}</p>
+                @php
+                $rentPrice = $property->formattedPriceRent();
+                $pricePerWah = $property->formattedPricePerWah();
+                @endphp
+                @if ($rentPrice || $pricePerWah)
+                <div class="shrink-0 space-y-0.5 text-right">
+                    @if ($rentPrice)
+                    <p class="text-md font-bold text-blue-700 heading-font">{{ $rentPrice }}</p>
+                    @endif
+                    @if ($pricePerWah)
+                    <p class="text-md font-bold text-blue-700 heading-font">{{ $pricePerWah }}</p>
+                    @endif
+                </div>
                 @endif
             </div>
 

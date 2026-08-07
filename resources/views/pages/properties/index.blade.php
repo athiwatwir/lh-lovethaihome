@@ -1,29 +1,29 @@
 @extends('layouts.home')
 
 @push('head')
-    <link rel="preconnect" href="https://office.lovethaihome.com" crossorigin>
+<link rel="preconnect" href="https://office.lovethaihome.com" crossorigin>
 @endpush
 
 @section('content')
 @php
 $listQuery = array_filter([
-    'user_id' => $currentUser?->id,
-    'zone_id' => $zoneId,
-    'asset_type_id' => $currentType?->id,
-    'tag_id' => $tagId ?? null,
-    'tag_name' => data_get($currentTag, 'name'),
+'user_id' => $currentUser?->id,
+'zone_id' => $zoneId,
+'asset_type_id' => $currentType?->id,
+'tag_id' => $tagId ?? null,
+'tag_name' => data_get($currentTag, 'name'),
 ]);
 $typeFilterBaseQuery = array_filter([
-    'user_id' => $currentUser?->id,
-    'zone_id' => $zoneId,
-    'tag_id' => $tagId ?? null,
-    'tag_name' => data_get($currentTag, 'name'),
+'user_id' => $currentUser?->id,
+'zone_id' => $zoneId,
+'tag_id' => $tagId ?? null,
+'tag_name' => data_get($currentTag, 'name'),
 ]);
 $zonePickerQuery = array_filter([
-    'user_id' => $currentUser?->id,
-    'asset_type_id' => $currentType?->id,
-    'tag_id' => $tagId ?? null,
-    'tag_name' => data_get($currentTag, 'name'),
+'user_id' => $currentUser?->id,
+'asset_type_id' => $currentType?->id,
+'tag_id' => $tagId ?? null,
+'tag_name' => data_get($currentTag, 'name'),
 ]);
 $showZoneModal = ! $zoneId && ! ($isSearch ?? false);
 $canShowResults = ($isSearch ?? false) || $zoneId;
@@ -170,15 +170,10 @@ $canShowResults = ($isSearch ?? false) || $zoneId;
         <div class="relative mb-8 md:hidden">
             <label for="asset-type-filter" class="mb-2 block text-sm font-medium text-gray-700">ประเภททรัพย์</label>
             <div class="relative">
-                <select
-                    id="asset-type-filter"
-                    class="w-full appearance-none rounded-xl border border-gray-300 bg-white py-3 pl-4 pr-10 text-sm font-medium text-gray-900 shadow-sm transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none"
-                    onchange="if (this.value) { window.location.href = this.value; }">
+                <select id="asset-type-filter" class="w-full appearance-none rounded-xl border border-gray-300 bg-white py-3 pl-4 pr-10 text-sm font-medium text-gray-900 shadow-sm transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none" onchange="if (this.value) { window.location.href = this.value; }">
                     <option value="{{ route('properties.index', $typeFilterBaseQuery) }}" @selected(! $currentType)>ทั้งหมด</option>
                     @foreach ($propertyTypes as $type)
-                    <option
-                        value="{{ route('properties.index', array_merge($typeFilterBaseQuery, ['asset_type_id' => $type->id])) }}"
-                        @selected($currentType?->id === $type->id)>
+                    <option value="{{ route('properties.index', array_merge($typeFilterBaseQuery, ['asset_type_id' => $type->id])) }}" @selected($currentType?->id === $type->id)>
                         {{ $type->name }}
                     </option>
                     @endforeach
@@ -191,19 +186,15 @@ $canShowResults = ($isSearch ?? false) || $zoneId;
 
         {{-- Desktop: chips --}}
         <div class="mb-8 hidden flex-wrap gap-2 md:flex">
-            <a href="{{ route('properties.index', $typeFilterBaseQuery) }}" @class([
-                'rounded-full border px-4 py-2 text-sm font-medium transition',
-                'border-blue-700 bg-blue-700 text-white' => ! $currentType,
+            <a href="{{ route('properties.index', $typeFilterBaseQuery) }}" @class([ 'rounded-full border px-4 py-2 text-sm font-medium transition' , 'border-blue-700 bg-blue-700 text-white'=> ! $currentType,
                 'border-gray-300 bg-white text-gray-700 hover:border-blue-400 hover:text-blue-700' => $currentType,
-            ])>
+                ])>
                 ทั้งหมด
             </a>
             @foreach ($propertyTypes as $type)
-            <a href="{{ route('properties.index', array_merge($typeFilterBaseQuery, ['asset_type_id' => $type->id])) }}" @class([
-                'rounded-full border px-4 py-2 text-sm font-medium transition',
-                'border-blue-700 bg-blue-700 text-white' => $currentType?->id === $type->id,
+            <a href="{{ route('properties.index', array_merge($typeFilterBaseQuery, ['asset_type_id' => $type->id])) }}" @class([ 'rounded-full border px-4 py-2 text-sm font-medium transition' , 'border-blue-700 bg-blue-700 text-white'=> $currentType?->id === $type->id,
                 'border-gray-300 bg-white text-gray-700 hover:border-blue-400 hover:text-blue-700' => $currentType?->id !== $type->id,
-            ])>
+                ])>
                 {{ $type->name }}
             </a>
             @endforeach
@@ -228,28 +219,16 @@ $canShowResults = ($isSearch ?? false) || $zoneId;
             <a href="{{ route('home') }}" class="mt-4 inline-block text-blue-700 hover:underline">กลับหน้าหลัก</a>
         </div>
         @else
-        <div
-            x-data="propertyProgressiveReveal({ batchSize: 4 })"
-            x-cloak
-        >
+        <div x-data="propertyProgressiveReveal({ batchSize: 4 })" x-cloak>
             <div x-ref="grid" id="properties-grid" class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 @foreach ($properties as $property)
-                <div
-                    data-property-card
-                    x-show="isVisible({{ $loop->index }})"
-                    x-transition:enter="transition ease-out duration-300"
-                    x-transition:enter-start="opacity-0 translate-y-4"
-                    x-transition:enter-end="opacity-100 translate-y-0"
-                >
+                <div data-property-card x-show="isVisible({{ $loop->index }})" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0">
                     <x-property-card :property="$property" :image-index="$loop->index" />
                 </div>
                 @endforeach
             </div>
 
-            <div
-                x-show="loading && visibleCount < total"
-                class="mt-8 flex items-center justify-center gap-3 text-sm text-gray-500"
-            >
+            <div x-show="loading && visibleCount < total" class="mt-8 flex items-center justify-center gap-3 text-sm text-gray-500">
                 <svg class="h-5 w-5 animate-spin text-blue-600" fill="none" viewBox="0 0 24 24" aria-hidden="true">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>

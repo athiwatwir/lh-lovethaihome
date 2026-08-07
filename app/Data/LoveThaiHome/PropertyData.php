@@ -23,6 +23,7 @@ readonly class PropertyData
         public ?array $zone,
         public int $priceAmount,
         public ?int $priceRent,
+        public ?int $pricePerWah,
         public ?array $listing,
         public bool $isRecommend,
         public ?string $thumbnailUrl,
@@ -47,6 +48,7 @@ readonly class PropertyData
             zone: isset($data['zone']) ? (array) $data['zone'] : null,
             priceAmount: (int) ($data['price_amount'] ?? 0),
             priceRent: isset($data['price_rent']) ? (int) $data['price_rent'] : null,
+            pricePerWah: isset($data['price_per_wah']) ? (int) $data['price_per_wah'] : null,
             listing: isset($data['listing']) ? (array) $data['listing'] : null,
             isRecommend: (bool) ($data['is_recommend'] ?? false),
             thumbnailUrl: isset($data['thumbnail_url']) ? (string) $data['thumbnail_url'] : null,
@@ -105,6 +107,15 @@ readonly class PropertyData
     {
         if ($this->priceRent > 0) {
             return number_format($this->priceRent) . ' บาท/เดือน';
+        }
+
+        return null;
+    }
+
+    public function formattedPricePerWah(): ?string
+    {
+        if ($this->pricePerWah > 0) {
+            return number_format($this->pricePerWah) . ' บาท/ตรว.';
         }
 
         return null;
