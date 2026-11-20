@@ -11,6 +11,7 @@ use App\Support\RemoteImageToJpeg;
 use RuntimeException;
 use App\Services\LoveThaiHome\Exceptions\LoveThaiHomeApiException;
 use App\Services\LoveThaiHome\LoveThaiHomeService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -161,7 +162,7 @@ class PropertyController extends Controller
     }
 
 
-    public function showByCode(string $propertyTypeCode, string $propertyCode, LoveThaiHomeService $api, ?string $slug = null): View
+    public function showByCode(string $propertyTypeCode, string $propertyCode, LoveThaiHomeService $api, ?string $slug = null): View|RedirectResponse
     {
         try {
             $detail = $api->property($propertyCode);
@@ -180,6 +181,10 @@ class PropertyController extends Controller
             abort(503, 'ไม่สามารถโหลดข้อมูลทรัพย์ได้ในขณะนี้');
         }
 
+        if ($redirect = $this->canonicalShowByCodeRedirect($detail, $propertyTypeCode, $propertyCode, $slug)) {
+            return $redirect;
+        }
+
         $user = $this->resolveUser($api, $detail);
 
         PropertySeo::apply($detail);
@@ -188,6 +193,37 @@ class PropertyController extends Controller
             'property' => $detail,
             'user' => $user,
         ]);
+    }
+
+    private function canonicalShowByCodeRedirect(
+        PropertyDetailData $detail,
+        string $propertyTypeCode,
+        string $propertyCode,
+        ?string $slug,
+    ): ?RedirectResponse {
+        $canonicalType = $detail->propertyTypeUrlSegment() ?: PropertyData::normalizeTypeSegment($propertyTypeCode);
+        $canonicalCode = $detail->code !== '' ? $detail->code : $propertyCode;
+        $canonicalSlug = $detail->urlSlug();
+
+        $typeMatches = PropertyData::normalizeTypeSegment($propertyTypeCode) === $canonicalType;
+        $codeMatches = strcasecmp($propertyCode, $canonicalCode) === 0;
+        $slugMatches = $canonicalSlug === ''
+            || ($slug !== null && $slug !== '' && rawurldecode($slug) === $canonicalSlug);
+
+        if ($typeMatches && $codeMatches && $slugMatches) {
+            return null;
+        }
+
+        $params = [
+            'propertyTypeCode' => $canonicalType,
+            'propertyCode' => $canonicalCode,
+        ];
+
+        if ($canonicalSlug !== '') {
+            $params['slug'] = $canonicalSlug;
+        }
+
+        return redirect()->route('pages.properties.showByCode', $params, 301);
     }
 
     public function showImage(string $property, LoveThaiHomeService $api): View

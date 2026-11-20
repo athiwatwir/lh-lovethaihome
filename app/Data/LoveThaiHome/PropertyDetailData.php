@@ -7,7 +7,7 @@ use App\Support\RichHtml;
 readonly class PropertyDetailData
 {
     /**
-     * @param  array{id: string, name: string}|null  $assetType
+     * @param  array{id: string, name: string, code?: string}|null  $assetType
      * @param  array{id: string, name: string, code?: string}|null  $agent
      * @param  array{id: string, firstname?: string, lastname?: string, phone?: string, email?: string, lineid?: string, profile_image_url?: string}|null  $user
      * @param  array{id: string, name: string}|null  $zone
@@ -46,6 +46,7 @@ readonly class PropertyDetailData
         public ?float $latitude,
         public ?float $longitude,
         public ?string $youtubeLink,
+        public ?string $slug = null,
     ) {}
 
     /**
@@ -87,6 +88,9 @@ readonly class PropertyDetailData
             youtubeLink: isset($data['youtube_link']) && $data['youtube_link'] !== ''
                 ? trim((string) $data['youtube_link'])
                 : null,
+            slug: isset($data['slug']) && trim((string) $data['slug']) !== ''
+                ? trim((string) $data['slug'])
+                : null,
         );
     }
 
@@ -108,7 +112,23 @@ readonly class PropertyDetailData
             'created_at' => $this->createdAt,
             'address' => $this->address,
             'seller' => $this->seller,
+            'slug' => $this->slug,
         ]);
+    }
+
+    public function urlSlug(): string
+    {
+        return $this->toPropertyData()->urlSlug();
+    }
+
+    public function propertyTypeUrlSegment(): ?string
+    {
+        return $this->toPropertyData()->propertyTypeUrlSegment();
+    }
+
+    public function detailUrl(): string
+    {
+        return $this->toPropertyData()->detailUrl();
     }
 
     /**

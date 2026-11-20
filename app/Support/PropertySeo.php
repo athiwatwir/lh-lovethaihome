@@ -13,7 +13,7 @@ class PropertySeo
 {
     public static function apply(PropertyDetailData $property): void
     {
-        $canonicalUrl = route('properties.show', $property->id);
+        $canonicalUrl = $property->detailUrl();
         $title = self::title($property);
         $description = self::description($property);
         $image = self::primaryImage($property);
@@ -133,7 +133,7 @@ class PropertySeo
             '@type' => 'ListItem',
             'position' => 3,
             'name' => $property->code !== '' ? '#'.$property->code : $property->name,
-            'item' => route('properties.show', $property->id),
+            'item' => $property->detailUrl(),
         ];
 
         return $items;

@@ -24,7 +24,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
 Route::get('/p/{propertyTypeCode}/{propertyCode}/{slug?}', [PropertyController::class, 'showByCode'])
-    ->where('propertyTypeCode', '[A-Za-z0-9-_]+')
+    ->where('propertyTypeCode', '[^/]+')
     ->where('propertyCode', '[A-Za-z0-9-_]+')
     ->where('slug', '.+')
     ->name('pages.properties.showByCode');

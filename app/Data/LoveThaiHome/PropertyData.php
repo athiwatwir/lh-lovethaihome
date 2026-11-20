@@ -161,13 +161,36 @@ readonly class PropertyData
         return $fromName !== '' ? $fromName : $this->code;
     }
 
+    public function propertyTypeUrlSegment(): ?string
+    {
+        $name = trim((string) ($this->assetType['name'] ?? ''));
+
+        if ($name !== '') {
+            return self::normalizeTypeSegment($name);
+        }
+
+        $code = trim((string) ($this->assetType['code'] ?? ''));
+
+        return $code !== '' ? self::normalizeTypeSegment($code) : null;
+    }
+
+    public static function normalizeTypeSegment(string $value): string
+    {
+        $value = rawurldecode(trim($value));
+        $value = str_replace(['/', '\\'], '-', $value);
+        $value = preg_replace('/\s+/u', '-', $value) ?? '';
+        $value = preg_replace('/-+/u', '-', $value) ?? '';
+
+        return trim($value, '-');
+    }
+
     public function detailUrl(): string
     {
-        $propertyTypeCode = $this->assetType['code'] ?? null;
+        $propertyTypeSegment = $this->propertyTypeUrlSegment();
 
-        if ($propertyTypeCode && $this->code !== '') {
+        if ($propertyTypeSegment && $this->code !== '') {
             $params = [
-                'propertyTypeCode' => $propertyTypeCode,
+                'propertyTypeCode' => $propertyTypeSegment,
                 'propertyCode' => $this->code,
             ];
 

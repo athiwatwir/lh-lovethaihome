@@ -68,6 +68,13 @@ $socialLinks = [
         shareUrl: window.location.href,
         shareTitle: document.title,
         canNativeShare: typeof navigator !== 'undefined' && typeof navigator.share === 'function',
+        decodedShareUrl() {
+            try {
+                return decodeURIComponent(this.shareUrl);
+            } catch (error) {
+                return this.shareUrl;
+            }
+        },
         close() {
             this.open = false;
             this.shareOpen = false;
@@ -77,11 +84,13 @@ $socialLinks = [
             this.copied = false;
         },
         async copyUrl() {
+            const decodedUrl = this.decodedShareUrl();
+
             try {
-                await navigator.clipboard.writeText(this.shareUrl);
+                await navigator.clipboard.writeText(decodedUrl);
             } catch (error) {
                 const input = document.createElement('input');
-                input.value = this.shareUrl;
+                input.value = decodedUrl;
                 document.body.appendChild(input);
                 input.select();
                 document.execCommand('copy');
@@ -99,13 +108,13 @@ $socialLinks = [
             try {
                 await navigator.share({
                     title: this.shareTitle,
-                    url: this.shareUrl,
+                    url: this.decodedShareUrl(),
                 });
                 this.shareOpen = false;
             } catch (error) {}
         },
         shareTo(platform) {
-            const url = encodeURIComponent(this.shareUrl);
+            const url = encodeURIComponent(this.decodedShareUrl());
             const title = encodeURIComponent(this.shareTitle);
             const targets = {
                 line: `https://social-plugins.line.me/lineit/share?url=${url}`,
@@ -152,7 +161,7 @@ $socialLinks = [
             </div>
 
             <div class="flex items-center gap-2 rounded-xl bg-slate-50 p-2 ring-1 ring-slate-200/80">
-                <p class="min-w-0 flex-1 truncate text-xs text-slate-600" x-text="shareUrl" title="ลิงก์ปัจจุบัน"></p>
+                <p class="min-w-0 flex-1 truncate text-xs text-slate-600" x-text="decodedShareUrl()" :title="decodedShareUrl()"></p>
                 <button
                     type="button"
                     @click="copyUrl()"
