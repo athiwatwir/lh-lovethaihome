@@ -65,15 +65,55 @@ $socialLinks = [
         open: true,
         shareOpen: false,
         copied: false,
-        shareUrl: window.location.href,
+        shareUrl: '',
         shareTitle: document.title,
         canNativeShare: typeof navigator !== 'undefined' && typeof navigator.share === 'function',
-        decodedShareUrl() {
+        decodeUrl(url) {
             try {
-                return decodeURIComponent(this.shareUrl);
+                return decodeURIComponent(url);
             } catch (error) {
-                return this.shareUrl;
+                return url;
             }
+        },
+        currentShareUrl() {
+            return this.decodeUrl(this.shareUrl || window.location.href);
+        },
+        isMobile() {
+            return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || '')
+                || ((navigator.maxTouchPoints || 0) > 1 && /Mac/i.test(navigator.platform || ''));
+        },
+        refreshShareUrl() {
+            this.shareUrl = this.decodeUrl(window.location.href);
+            this.shareTitle = document.title;
+        },
+        openShareTarget(url, { sameTab = false } = {}) {
+            if (sameTab) {
+                window.location.assign(url);
+                return;
+            }
+
+            // มือถือ: หลีกเลี่ยง window.open + features (โดนบล็อกบ่อย)
+            if (this.isMobile()) {
+                const anchor = document.createElement('a');
+                anchor.href = url;
+                anchor.target = '_blank';
+                anchor.rel = 'noopener noreferrer';
+                document.body.appendChild(anchor);
+                anchor.click();
+                anchor.remove();
+                return;
+            }
+
+            const popup = window.open(url, '_blank', 'width=600,height=520');
+
+            if (! popup || popup.closed) {
+                window.location.assign(url);
+                return;
+            }
+
+            try {
+                popup.opener = null;
+            } catch (error) {}
         },
         close() {
             this.open = false;
@@ -82,9 +122,12 @@ $socialLinks = [
         toggleShare() {
             this.shareOpen = ! this.shareOpen;
             this.copied = false;
+            if (this.shareOpen) {
+                this.refreshShareUrl();
+            }
         },
         async copyUrl() {
-            const decodedUrl = this.decodedShareUrl();
+            const decodedUrl = this.currentShareUrl();
 
             try {
                 await navigator.clipboard.writeText(decodedUrl);
@@ -105,37 +148,71 @@ $socialLinks = [
                 return;
             }
 
+            this.refreshShareUrl();
+
             try {
                 await navigator.share({
                     title: this.shareTitle,
-                    url: this.decodedShareUrl(),
+                    text: this.shareTitle,
+                    url: this.currentShareUrl(),
                 });
                 this.shareOpen = false;
             } catch (error) {}
         },
-        shareTo(platform) {
-            const url = encodeURIComponent(this.decodedShareUrl());
-            const title = encodeURIComponent(this.shareTitle);
-            const targets = {
-                line: `https://social-plugins.line.me/lineit/share?url=${url}`,
-                facebook: `https://www.facebook.com/sharer/sharer.php?u=${url}`,
-                twitter: `https://twitter.com/intent/tweet?url=${url}&text=${title}`,
-                email: `mailto:?subject=${title}&body=${url}`,
-            };
+        async shareTo(platform) {
+            this.refreshShareUrl();
 
-            if (! targets[platform]) {
+            // ใช้ URL ภาษาไทยที่ decode แล้ว (หลักการเดียวกับปุ่มคัดลอก)
+            const pageUrl = this.currentShareUrl();
+            const title = this.shareTitle;
+            const mobile = this.isMobile();
+
+            if (platform === 'line') {
+                if (mobile) {
+                    // Deep link เปิดแอป LINE บนมือถือ (social-plugins มักพังบน iOS)
+                    const text = title ? `${title}\n${pageUrl}` : pageUrl;
+                    this.openShareTarget(`https://line.me/R/share?text=${encodeURIComponent(text)}`, { sameTab: true });
+                } else {
+                    this.openShareTarget(`https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(pageUrl)}`);
+                }
+                return;
+            }
+
+            if (platform === 'facebook') {
+                // iOS + Facebook app: sharer.php พังบ่อย → ใช้ native share sheet แทน
+                if (mobile && this.canNativeShare) {
+                    try {
+                        await navigator.share({
+                            title: title,
+                            text: title,
+                            url: pageUrl,
+                        });
+                        this.shareOpen = false;
+                    } catch (error) {}
+                    return;
+                }
+
+                this.openShareTarget(
+                    `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(pageUrl)}`,
+                    { sameTab: mobile },
+                );
+                return;
+            }
+
+            if (platform === 'twitter') {
+                this.openShareTarget(
+                    `https://twitter.com/intent/tweet?url=${encodeURIComponent(pageUrl)}&text=${encodeURIComponent(title)}`,
+                    { sameTab: mobile },
+                );
                 return;
             }
 
             if (platform === 'email') {
-                window.location.href = targets[platform];
-
-                return;
+                window.location.href = `mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(pageUrl)}`;
             }
-
-            window.open(targets[platform], '_blank', 'noopener,noreferrer,width=600,height=520');
         },
-    }" x-show="open" @keydown.escape.window="shareOpen = false" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-3" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-3" class="pointer-events-none fixed inset-x-0 z-40 flex justify-center px-3 bottom-[calc(5rem+env(safe-area-inset-bottom))] md:bottom-5" aria-label="ติดตามเราบนโซเชียลมีเดีย">
+    }"
+    x-init="refreshShareUrl()" x-show="open" @keydown.escape.window="shareOpen = false" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-3" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-3" class="pointer-events-none fixed inset-x-0 z-40 flex justify-center px-3 bottom-[calc(5rem+env(safe-area-inset-bottom))] md:bottom-5" aria-label="ติดตามเราบนโซเชียลมีเดีย">
     <div class="pointer-events-auto relative flex max-w-full items-center gap-1 rounded-full border border-white/80 bg-white/92 px-1.5 py-1 shadow-lg shadow-slate-900/10 ring-1 ring-slate-200/60 backdrop-blur-md md:gap-1.5 md:px-3 md:py-2">
         {{-- Share panel --}}
         <div
@@ -161,7 +238,7 @@ $socialLinks = [
             </div>
 
             <div class="flex items-center gap-2 rounded-xl bg-slate-50 p-2 ring-1 ring-slate-200/80">
-                <p class="min-w-0 flex-1 truncate text-xs text-slate-600" x-text="decodedShareUrl()" :title="decodedShareUrl()"></p>
+                <p class="min-w-0 flex-1 truncate text-xs text-slate-600" x-text="currentShareUrl()" :title="currentShareUrl()"></p>
                 <button
                     type="button"
                     @click="copyUrl()"
