@@ -86,6 +86,29 @@ $socialLinks = [
             this.shareUrl = this.decodeUrl(window.location.href);
             this.shareTitle = document.title;
         },
+        // iOS/Android มัก encode ช่อง url เป็น %E0%B8... → ใส่ลิงก์ไทยใน text แทน
+        nativeSharePayload() {
+            const pageUrl = this.currentShareUrl();
+            const title = this.shareTitle;
+
+            return {
+                title: title,
+                text: title ? `${title}\n${pageUrl}` : pageUrl,
+            };
+        },
+        async shareViaNativeSheet() {
+            const payload = this.nativeSharePayload();
+
+            if (typeof navigator.canShare === 'function' && ! navigator.canShare(payload)) {
+                await navigator.share({
+                    title: payload.title,
+                    text: payload.text || this.currentShareUrl(),
+                });
+                return;
+            }
+
+            await navigator.share(payload);
+        },
         openShareTarget(url, { sameTab = false } = {}) {
             if (sameTab) {
                 window.location.assign(url);
@@ -151,11 +174,7 @@ $socialLinks = [
             this.refreshShareUrl();
 
             try {
-                await navigator.share({
-                    title: this.shareTitle,
-                    text: this.shareTitle,
-                    url: this.currentShareUrl(),
-                });
+                await this.shareViaNativeSheet();
                 this.shareOpen = false;
             } catch (error) {}
         },
@@ -182,11 +201,7 @@ $socialLinks = [
                 // iOS + Facebook app: sharer.php พังบ่อย → ใช้ native share sheet แทน
                 if (mobile && this.canNativeShare) {
                     try {
-                        await navigator.share({
-                            title: title,
-                            text: title,
-                            url: pageUrl,
-                        });
+                        await this.shareViaNativeSheet();
                         this.shareOpen = false;
                     } catch (error) {}
                     return;
